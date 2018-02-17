@@ -1,0 +1,19 @@
+Project Setup Guide
+-------------------
+To create your virtual environment, from project directory:
+    pipenv install
+To select the virtual environment in PyCharm:
+    Preferences
+    Project: SEASide
+    Project Interpreter
+    Project Interpreter: Show all
+    +: Add local
+    Existing environment
+    Find and select your pipenv virtual environment
+When you want to push you changes to GitHub:
+    VCS -> Commit
+    VCS -> Git -> Fetch
+    On the bottom-right of the window:
+        Git
+        Remote Branches: origin/master -> Merge
+    VCS -> Git -> Push
