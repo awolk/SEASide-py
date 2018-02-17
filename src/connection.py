@@ -3,7 +3,7 @@ import paramiko
 
 class Connection:
     def __init__(self, server):
-        self.server = server
+        self._server = server
 
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
@@ -11,7 +11,7 @@ class Connection:
         self.client.load_system_host_keys()
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
-            self.client.connect(self.server, username=username, look_for_keys=True)
+            self.client.connect(self._server, username=username, look_for_keys=True)
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
             print(e)
             return False
@@ -20,8 +20,8 @@ class Connection:
 
     def attempt_login(self, username, password):
         try:
-            self.client.connect(self.server, username=username, password=password)
-        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) :
+            self.client.connect(self._server, username=username, password=password)
+        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException):
             return False
         else:
             return True
@@ -54,3 +54,10 @@ class Connection:
     def receive_ssh_data(self):
         """returns buffered received data"""
         pass
+
+    def resize_term(self, cols=80, rows=24):
+        """resizes the terminal """
+        try:
+            self._chan.resize_pty(width=cols, height=rows)
+        except (paramiko.SSHException) as e:
+            print(e)
