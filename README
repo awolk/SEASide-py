@@ -1,5 +1,6 @@
 Project Setup Guide
 -------------------
+
 To create your virtual environment, from project directory:
     pipenv install
 To select the virtual environment in PyCharm:
