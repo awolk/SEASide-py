@@ -41,6 +41,7 @@ Project Setup Guide
 -------------------
 To create your virtual environment, from project directory:
     pipenv install
+
 To select the virtual environment in PyCharm:
     Preferences
     Project: SEASide
@@ -49,6 +50,7 @@ To select the virtual environment in PyCharm:
     +: Add local
     Existing environment
     Find and select your pipenv virtual environment
+
 When you want to push you changes to GitHub:
     VCS -> Commit
     VCS -> Git -> Fetch
@@ -56,3 +58,11 @@ When you want to push you changes to GitHub:
         Git
         Remote Branches: origin/master -> Merge
     VCS -> Git -> Push
+
+To run through PyCharm:
+    Select empty selector on top right
+    Edit Configurations
+    + -> Python
+        Name: SEASide
+        Script path: main.py
+        Working directory: set to main repository directory
