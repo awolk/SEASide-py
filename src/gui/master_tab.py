@@ -20,7 +20,7 @@ class MasterTab(FloatLayout):
 
     def connection_failed(self):
         self.remove_widget(self._loader)
-        self._login = Login()
+        self._login = Login('Sample Message')
         self.add_widget(self._login)
 
     def give_credentials(self):
