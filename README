@@ -1,6 +1,19 @@
+File Structure
+--------------
+* main.py - Starts program
+* app.py - Main Kivy App
+* connection.py - Interface to SSH and SFTP server
+* gui/
+    * main_window.py - Master window
+    * master_tab.py - Single tab for unique connection
+    * loader.py - Tab loading widget
+    * login.py - Login widget
+    * connection_tab.py - Connected tab: holds terminal and file explorer
+    * terminal.py - Terminal Widget
+    * fileexplorer.py - File Explorer Widget
+
 Project Setup Guide
 -------------------
-
 To create your virtual environment, from project directory:
     pipenv install
 To select the virtual environment in PyCharm:
