@@ -8,10 +8,12 @@ class Connection:
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
         self.client = paramiko.SSHClient()
+        self.client.load_system_host_keys()
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
-            self.client.connect(self.server, username=username)
-        except paramiko.AuthenticationException:
+            self.client.connect(self.server, username=username, look_for_keys=True)
+        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
+            print(e)
             return False
         else:
             return True
@@ -19,12 +21,13 @@ class Connection:
     def attempt_login(self, username, password):
         try:
             self.client.connect(self.server, username=username, password=password)
-        except paramiko.AuthenticationException:
+        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) :
             return False
         else:
             return True
 
     def send_ssh_bytes(self, bytes):
+        chan = self.client.invoke_shell()
 
         # Check if connection is made previously
         #if (self.client):
