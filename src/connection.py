@@ -13,13 +13,17 @@ class Connection:
             self.client.connect(self.server, username=username)
         except paramiko.AuthenticationException:
             return False
+        else:
+            return True
 
     def attempt_login(self, username, password):
         try:
             self.client.connect(self.server, username=username, password=password)
         except paramiko.AuthenticationException:
             return False
-        
+        else:
+            return True
+
     def send_ssh_bytes(self, bytes):
 
         # Check if connection is made previously
