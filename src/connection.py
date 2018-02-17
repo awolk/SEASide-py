@@ -9,10 +9,20 @@ class Connection:
         """ returns True if connection successful returns False is unable to authenticate"""
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
-        self.client.connect(self.server, username=username)
+        try:
+            self.client.connect(self.server, username=username)
+        except paramiko.AuthenticationException:
+            return False
+        else:
+            return True
 
     def attempt_login(self, username, password):
-        self.client.connect(self.server, username=username, password=password)
+        try:
+            self.client.connect(self.server, username=username, password=password)
+        except paramiko.AuthenticationException:
+            return False
+        else:
+            return True
 
     def send_ssh_bytes(self, bytes):
 
