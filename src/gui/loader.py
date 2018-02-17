@@ -3,15 +3,17 @@ from kivy.uix.label import Label
 
 
 class Loader(FloatLayout):
-    COUNTER = 0
-
     def __init__(self):
-        super(Loader, self).__init__()
+        super(Loader, self).__init__(size_hint=(1, 1))
         self.add_widget(Label(
-            text='Loading... {}'.format(Loader.COUNTER),
+            text='Loading...',
             pos_hint={'center_x': 0.5, 'center_y': 0.5},
         ))
-        Loader.COUNTER += 1
 
-    def force_fail(self):
-        self.parent.connection_failed()
+    def connect(self, username, password=None):
+        conn = self.parent.get_connection()
+        success = conn.attempt_login(username, password) if password else conn.attempt_connection(username)
+        if success:
+            self.parent.connection_successful()
+        else:
+            self.parent.connection_failed()

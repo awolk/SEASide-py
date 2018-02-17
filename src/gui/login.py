@@ -1,6 +1,4 @@
-from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
@@ -27,6 +25,9 @@ class Login(GridLayout):
         self.subview.add_widget(Label(text='Password'))
         self._password = TextInput(password=True, multiline=False)
         self.subview.add_widget(self._password)
-        self._submit = Button(text='Login')
+        self._submit = Button(text='Login', on_press=self._login_pressed)
         self.add_widget(self.subview)
         self.add_widget(self._submit)
+
+    def _login_pressed(self, *args):
+        self.parent.give_credentials(self._username.text, self._password.text)
