@@ -51,6 +51,6 @@ class Connection:
         """returns True if there is buffered data returns False otherwise"""
         pass
 
-    def recieve_ssh_data(self):
-        """returns buffered recieved data"""
+    def receive_ssh_data(self):
+        """returns buffered received data"""
         pass
