@@ -1,5 +1,4 @@
 import paramiko
-import os
 
 
 class Connection:
@@ -7,6 +6,8 @@ class Connection:
         self.server = server
         self.client = paramiko.SSHClient()
 
+    def create_chan(self):
+        self._chan = self.client.invoke_shell()
 
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
@@ -32,7 +33,7 @@ class Connection:
             return True
 
     def send_ssh_bytes(self, bytes):
-        chan = self.client.invoke_shell()
+
 
         # Check if connection is made previously
         #if (self.client):
