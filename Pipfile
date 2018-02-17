@@ -11,6 +11,7 @@ pyte = "*"
 pyinstaller = "*"
 cython = "*"
 "d4a76af" = {file = "https://github.com/kivy/kivy/archive/master.zip"}
+paramiko = "*"
 
 
 [dev-packages]
