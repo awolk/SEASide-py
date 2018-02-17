@@ -18,12 +18,3 @@ class Login(GridLayout):
         self.password = TextInput(password=True, multiline=False)
         self.add_widget(self.password)
         self.submit = Button(text='Submit')
-
-
-class MyApp(App):
-    def build(self):
-        return Login()
-
-
-if __name__ == '__main__':
-    MyApp().run()

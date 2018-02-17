@@ -1,3 +1,3 @@
-from app import SEASideApp
+from src.app import SEASideApp
 
 SEASideApp().run()
