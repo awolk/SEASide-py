@@ -1,13 +1,15 @@
 import paramiko
+import os
 
 
 class Connection:
     def __init__(self, server):
         self.server = server
+        self.client = paramiko.SSHClient()
+
 
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
-        self.client = paramiko.SSHClient()
         self.client.load_system_host_keys()
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
@@ -19,9 +21,12 @@ class Connection:
             return True
 
     def attempt_login(self, username, password):
+        self.client.load_system_host_keys()
+        self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
             self.client.connect(self.server, username=username, password=password)
-        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) :
+        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
+            print(e)
             return False
         else:
             return True
