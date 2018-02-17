@@ -1,0 +1,22 @@
+[[source]]
+
+verify_ssl = true
+name = "pypi"
+url = "https://pypi.python.org/simple"
+
+
+[packages]
+
+pyte = "*"
+pyinstaller = "*"
+cython = "*"
+"d4a76af" = {file = "https://github.com/kivy/kivy/archive/master.zip"}
+
+
+[dev-packages]
+
+
+
+[requires]
+
+python_version = "3.5"
