@@ -3,14 +3,39 @@ File Structure
 * main.py - Starts program
 * app.py - Main Kivy App
 * connection.py - Interface to SSH and SFTP server
+* term_em.py - Terminal emulator interface
 * gui/
     * main_window.py - Master window
-    * master_tab.py - Single tab for unique connection
-    * loader.py - Tab loading widget
-    * login.py - Login widget
-    * connection_tab.py - Connected tab: holds terminal and file explorer
-    * terminal.py - Terminal Widget
-    * fileexplorer.py - File Explorer Widget
+        * master_tab.py - Single tab for unique connection
+            * loader.py - Tab loading widget
+            * login.py - Login widget
+            * connection_view.py - Connected tab: holds terminal and file explorer
+                * terminal.py - Terminal Widget
+                * fileexplorer.py - File Explorer Widget
+
+Interface
+---------
+Connection:
+    attempt_connection:
+        returns True if connection successful
+        returns False is unable to authenticate
+    attempt_login(username, password):
+        returns True if login (and thus connection) successful
+        returns False if unable to authenticate
+    send_ssh_bytes(bytes)
+    has_ssh_data():
+        returns True if there is buffered data
+        returns False otherwise
+    receive_ssh_data():
+        returns buffered received data
+
+MasterTab:
+    give_credentials:
+        receive credentials from child Login
+
+Login:
+    init(error_message?):
+        Display error_message (if exists) on startup
 
 Project Setup Guide
 -------------------
