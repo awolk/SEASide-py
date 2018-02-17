@@ -15,7 +15,7 @@ File Structure
 
 Interface
 ---------
-Connection:
+Connection(username):
     attempt_connection:
         returns True if connection successful
         returns False is unable to authenticate
