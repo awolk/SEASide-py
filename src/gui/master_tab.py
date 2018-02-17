@@ -3,6 +3,7 @@ from src.gui.loader import Loader
 from src.gui.login import Login
 from src.gui.connection_tab import ConnectionTab
 from src.connection import Connection
+from kivy.clock import Clock
 
 
 class MasterTab(FloatLayout):
@@ -14,7 +15,7 @@ class MasterTab(FloatLayout):
         self._login = Login()
         self._display = ConnectionTab()
         self.add_widget(self._loader)
-        self._loader.connect(self._username)
+        Clock.schedule_once(lambda dt: self._loader.connect(username), 0)
 
     def get_connection(self):
         return self._connection
@@ -26,7 +27,7 @@ class MasterTab(FloatLayout):
     def give_credentials(self, username, password=None):
         self.clear_widgets()
         self.add_widget(self._loader)
-        self._loader.connect(username, password)
+        Clock.schedule_once(lambda dt: self._loader.connect(username, password), 0)
 
     def connection_successful(self):
         self.clear_widgets()
