@@ -4,6 +4,7 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.button import Button
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelHeader
 from kivy.metrics import dp, sp
+from kivy.core.window import Window
 
 from src.gui.master_tab import MasterTab
 
@@ -17,6 +18,7 @@ SERVERS = {
 class MainWindow(FloatLayout):
     def __init__(self):
         super(MainWindow, self).__init__()
+        Window.size = (sp(920), sp(600))
         self._username = ''  # TODO: Get username somehow? (or don't)
         # Connection
         server_names = tuple(sorted(SERVERS.keys()))
