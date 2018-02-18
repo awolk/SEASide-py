@@ -4,17 +4,20 @@ import paramiko
 class Connection:
     def __init__(self, server):
         self._server = server
-        self.client = paramiko.SSHClient()
+        self._client = paramiko.SSHClient()
+        self._chan = None
 
     def create_chan(self):
-        self._chan = self.client.invoke_shell()
+        self._chan = self._client.invoke_shell()
+        self._chan.get_pty('vt100', width=80, height=24)
+        self._chan.settimeout(None)
 
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
-        self.client.load_system_host_keys()
-        self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
+        self._client.load_system_host_keys()
+        self._client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
-            self.client.connect(self._server, username=username, look_for_keys=True)
+            self._client.connect(self._server, username=username, look_for_keys=True)
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
             print(e)
             return False
@@ -23,10 +26,10 @@ class Connection:
             return True
 
     def attempt_login(self, username, password):
-        self.client.load_system_host_keys()
-        self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
+        self._client.load_system_host_keys()
+        self._client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
-            self.client.connect(self._server, username=username, password=password)
+            self._client.connect(self._server, username=username, password=password)
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) :
             return False
         else:
@@ -51,8 +54,8 @@ class Connection:
         return buffer
 
     def resize_term(self, cols=80, rows=24):
-        """resizes the terminal """
+        """resizes the terminal"""
         try:
             self._chan.resize_pty(width=cols, height=rows)
-        except (paramiko.SSHException) as e:
+        except paramiko.SSHException as e:
             print(e)
