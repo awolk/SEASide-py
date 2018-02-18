@@ -3,6 +3,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.spinner import Spinner
 from kivy.uix.button import Button
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelHeader
+from kivy.metrics import dp, sp
 
 from src.gui.master_tab import MasterTab
 
@@ -23,20 +24,20 @@ class MainWindow(FloatLayout):
             text=server_names[0],
             values=server_names,
             size_hint=(None, None),
-            size=(300, 60)
+            size=(dp(80), dp(60))
         )
         button = Button(
             text='Connect',
-            size=(300, 60),
+            size=(dp(80), dp(60)),
             size_hint=(None, None)
         )
         button.bind(on_press=self._new_tab)
         top_layout = BoxLayout(
-            spacing=10,
+            spacing=dp(0),
             orientation='horizontal',
             pos_hint={'top': 1, 'right': 1},
             size_hint=(None, None),
-            size=(610, 60)
+            size=(dp(160), dp(55))
         )
         top_layout.add_widget(button)
         top_layout.add_widget(self._spinner)
