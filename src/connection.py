@@ -5,18 +5,12 @@ class Connection:
     def __init__(self, server):
         self._server = server
         self._client = paramiko.SSHClient()
-        self._chan = None
 
     def create_chan(self):
-        try:
-            self._chan.get_pty(term='vt100', width=80, height=24)
-        except paramiko.ssh_exception.SSHException as e:
-            print(e)
         try:
             self._chan = self._client.invoke_shell()
         except paramiko.ssh_exception.SSHException as e:
             print(e)
-        self._chan.settimeout(None)
 
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
@@ -36,7 +30,8 @@ class Connection:
         self._client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
             self._client.connect(self._server, username=username, password=password)
-        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) :
+        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
+            print(e)
             return False
         else:
             self.create_chan()
