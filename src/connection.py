@@ -8,7 +8,15 @@ class Connection:
         self._chan = None
 
     def create_chan(self):
-        self._chan = self._client.invoke_shell()
+        try:
+            self._chan.get_pty(term='vt100', width=80, height=24)
+        except paramiko.ssh_exception.SSHException as e:
+            print(e)
+        try:
+            self._chan = self._client.invoke_shell()
+        except paramiko.ssh_exception.SSHException as e:
+            print(e)
+        self._chan.settimeout(None)
 
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
@@ -20,6 +28,7 @@ class Connection:
             print(e)
             return False
         else:
+            self.create_chan()
             return True
 
     def attempt_login(self, username, password):
@@ -30,37 +39,28 @@ class Connection:
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) :
             return False
         else:
+            self.create_chan()
             return True
 
     def send_ssh_bytes(self, bytes):
-        # Check if connection is made previously
-        #if (self.client):
-            #stdin, stdout, stderr = self.client.exec_command(command)
-            #while not stdout.channel.exit_status_ready():
-                # Print stdout data when available
-             #   if stdout.channel.recv_ready():
-                    # Retrieve the first 1024 bytes
-              #      alldata = stdout.channel.recv(1024)
-               #     while stdout.channel.recv_ready():
-                        # Retrieve the next 1024 bytes
-                #        alldata += stdout.channel.recv(1024)
-
-                    # Print as string with utf8 encoding
-                   #print(str(alldata, "utf8"))
-        #else:
-         #   print("Connection not opened.")
-        pass
+        if self._chan and self._chan.send_ready():
+            self._chan.send(bytes +"\n")
+        else:
+            print("Shell not opened")
 
     def has_ssh_data(self):
         """returns True if there is buffered data returns False otherwise"""
-        pass
+        return self._chan.recv_ready()
 
     def receive_ssh_data(self):
         """returns buffered received data"""
-        pass
+        buffer = ""
+        while self.has_ssh_data:
+            buffer += self._chan.recv(1024)
+        return buffer
 
     def resize_term(self, cols=80, rows=24):
-        """resizes the terminal """
+        """resizes the terminal"""
         try:
             self._chan.resize_pty(width=cols, height=rows)
         except paramiko.SSHException as e:
