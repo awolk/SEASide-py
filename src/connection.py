@@ -7,9 +7,13 @@ class Connection:
         self._client = paramiko.SSHClient()
         self._chan = None
 
-    def create_chan(self):
+    def create_chan(self, username, password):
+        #self.transport = paramiko.Transport((self._server, 22))
+        #self.transport.connect(username=username, password=password)
+        #a = self.transport.accept()
+        #self._chan = paramiko.channel.Channel(2)
+       # self._chan.get_pty('vt100', width=80, height=24)
         self._chan = self._client.invoke_shell()
-        self._chan.get_pty('vt100', width=80, height=24)
         self._chan.settimeout(None)
 
     def attempt_connection(self, username):
@@ -33,12 +37,12 @@ class Connection:
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) :
             return False
         else:
-            self.create_chan()
+            self.create_chan(username, password)
             return True
 
     def send_ssh_bytes(self, bytes):
         if self._chan and self._chan.send_ready():
-            self._chan.send(bytes +"\n")
+            self._chan.send(bytes)
         else:
             print("Shell not opened")
 
@@ -48,8 +52,8 @@ class Connection:
 
     def receive_ssh_data(self):
         """returns buffered received data"""
-        buffer = ""
-        while self.has_ssh_data:
+        buffer = b""
+        while self._chan != None and self.has_ssh_data():
             buffer += self._chan.recv(1024)
         return buffer
 
