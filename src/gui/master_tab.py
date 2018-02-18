@@ -33,3 +33,4 @@ class MasterTab(FloatLayout):
     def connection_successful(self):
         self.clear_widgets()
         self.add_widget(self._display)
+        self._display.start()
