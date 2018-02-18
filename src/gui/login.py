@@ -1,5 +1,4 @@
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.widget import Widget
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
@@ -45,7 +44,8 @@ class Login(GridLayout):
         self.subview.add_widget(self._password)
         self._submit = Button(
             text='Login',
-            size_hint=(1, 0.5))
+            size_hint=(1, 0.5),
+            on_press=self._login_attempted)
         self.add_widget(self.subview)
         self.add_widget(self._submit)
 

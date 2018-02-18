@@ -16,6 +16,7 @@ SERVERS = {
 class MainWindow(FloatLayout):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self._username = ''  # TODO: Get username somehow? (or don't)
         # Connection
         server_names = tuple(sorted(SERVERS.keys()))
         self._spinner = Spinner(
@@ -42,7 +43,7 @@ class MainWindow(FloatLayout):
         # Tab view
         self._tab_view = TabbedPanel()
         self._tab_view.default_tab_text = self._spinner.text
-        self._tab_view.default_tab_content = MasterTab(SERVERS[self._spinner.text])
+        self._tab_view.default_tab_content = MasterTab(SERVERS[self._spinner.text], self.get_username())
         # Build window
         self.add_widget(top_layout, 1)
         self.add_widget(self._tab_view)
@@ -51,5 +52,8 @@ class MainWindow(FloatLayout):
         server_name = self._spinner.text
         server = SERVERS[server_name]
         header = TabbedPanelHeader(text=server_name)
-        header.content = MasterTab(server)
+        header.content = MasterTab(server, self.get_username())
         self._tab_view.add_widget(header)
+
+    def get_username(self):
+        return self._username
