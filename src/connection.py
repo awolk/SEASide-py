@@ -5,7 +5,7 @@ class Connection:
     def __init__(self, server):
         self._server = server
         self._client = paramiko.SSHClient()
-
+        self._chan = None
     def create_chan(self):
         try:
             self._chan = self._client.invoke_shell()
@@ -39,7 +39,7 @@ class Connection:
 
     def send_ssh_bytes(self, bytes):
         if self._chan and self._chan.send_ready():
-            self._chan.send(bytes +"\n")
+            self._chan.send(bytes)
         else:
             print("Shell not opened")
 
@@ -49,8 +49,8 @@ class Connection:
 
     def receive_ssh_data(self):
         """returns buffered received data"""
-        buffer = ""
-        while self.has_ssh_data:
+        buffer = b""
+        while self._chan != None and self.has_ssh_data():
             buffer += self._chan.recv(1024)
         return buffer
 

@@ -13,7 +13,7 @@ class TerminalEmulator:
 
     def receive(self):
         """Receive bytes from server"""
-        if self._connection.has_ssh_bytes():
+        if self._connection.has_ssh_data():
             self._stream.feed(self._connection.receive_ssh_data())
 
     def resize(self, cols=80, rows=24):
@@ -22,3 +22,12 @@ class TerminalEmulator:
 
     def get_cursor(self):
         return self._screen.cursor.x, self._screen.cursor.y
+
+    def is_dirty(self):
+        return bool(self._screen.dirty)
+
+    def clear_dirty(self):
+        self._screen.dirty.clear()
+
+    def get_text(self):
+        return '\n'.join(self._screen.display)
