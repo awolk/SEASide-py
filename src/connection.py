@@ -78,7 +78,7 @@ class Connection:
         files = self._sftp.listdir(path)
         for i, file in enumerate(files):
             file = files[i]
-            files[i] = path + "/" + file
+            files[i] = path + file
         return files
 
 
