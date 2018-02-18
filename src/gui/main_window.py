@@ -18,7 +18,7 @@ SERVERS = {
 class MainWindow(FloatLayout):
     def __init__(self):
         super(MainWindow, self).__init__()
-        Window.size = (sp(920), sp(600))
+        Window.size = (sp(1000), sp(560))
         self._username = ''  # TODO: Get username somehow? (or don't)
         # Connection
         server_names = tuple(sorted(SERVERS.keys()))
