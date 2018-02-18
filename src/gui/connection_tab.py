@@ -7,11 +7,11 @@ class ConnectionTab(FloatLayout):
     def __init__(self):
         super(ConnectionTab, self).__init__()
         self.add_widget(FileExplorer(
-            size_hint=(0.2, 1),
+            size_hint=(0.25, 1),
             pos_hint={'left': 0}
         ))
         self._term = Terminal(
-            size_hint=(0.8, 1),
+            size_hint=(0.75, 1),
             pos_hint={'right': 1}
         )
         self.add_widget(self._term)
