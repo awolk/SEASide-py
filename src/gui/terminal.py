@@ -26,6 +26,8 @@ class Terminal(TextInput):
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         print(repr(keycode[1]), modifiers)
+        if keycode[1] == 'a':
+            self._term_em.write(b'a')
         if keycode[1] == 'backspace':
             self._term_em.write(ctrl.BS)
         elif keycode[1] == 'up':

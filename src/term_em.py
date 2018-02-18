@@ -13,7 +13,7 @@ class TerminalEmulator:
 
     def receive(self):
         """Receive bytes from server"""
-        if self._connection.has_ssh_bytes():
+        if self._connection.has_ssh_data():
             self._stream.feed(self._connection.receive_ssh_data())
 
     def resize(self, cols=80, rows=24):
