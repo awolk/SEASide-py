@@ -12,6 +12,9 @@ class Connection:
         except paramiko.ssh_exception.SSHException as e:
             print(e)
 
+    def create_sftp(self):
+        self._sftp = self._client.open_sftp()
+
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
         self._client.load_system_host_keys()
@@ -23,6 +26,7 @@ class Connection:
             return False
         else:
             self.create_chan()
+            self.create_sftp()
             return True
 
     def attempt_login(self, username, password):
@@ -35,6 +39,7 @@ class Connection:
             return False
         else:
             self.create_chan()
+            self.create_sftp()
             return True
 
     def send_ssh_bytes(self, bytes):
@@ -63,3 +68,19 @@ class Connection:
             self._chan.resize_pty(width=cols, height=rows)
         except paramiko.SSHException as e:
             print(e)
+
+    def get_size(self, filename):
+        stat = self._sftp.file.lstat(filename)
+        size = stat.st_size
+        return size
+
+    def list_dir(self, path):
+        self._sftp.listdir(path)
+
+    def is_dir(self, path):
+        try:
+            self._sftp.chdir(path)
+        except IOError:
+            return False
+        else:
+            return True
