@@ -39,7 +39,10 @@ class Connection:
 
     def send_ssh_bytes(self, bytes):
         if self._chan and self._chan.send_ready():
-            self._chan.send(bytes)
+            try:
+                self._chan.send(bytes)
+            except OSError:
+                pass  # TODO: Implement closing connections
         else:
             print("Shell not opened")
 

@@ -22,21 +22,24 @@ class Terminal(TextInput):
 
     def start(self):
         self._term_em = TerminalEmulator(self.parent.get_connection())
-        Clock.schedule_interval(self._check_input, 1)
+        Clock.schedule_interval(self._check_input, 0.1)
 
     def _check_input(self, dt):
         self._term_em.receive()
+        self.cursor = self._term_em.get_cursor()
         if self._term_em.is_dirty():
             self._term_em.clear_dirty()
             self.text = self._term_em.get_text()
 
+    def insert_text(self, substring, from_undo=False):
+        if from_undo: return
+        self._term_em.write(bytes(substring, 'ascii'))
+
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
-        print(repr(keycode[1]), modifiers)
-        if keycode[1] == 'a':
-            self._term_em.write(b'a')
-        elif keycode[1] == 'enter':
-            self._term_em.write(b'\n')
-        elif keycode[1] == 'backspace':
+        super(Terminal, self).keyboard_on_key_down(window, keycode, text, modifiers)
+        self.cursor = self._term_em.get_cursor()
+        print(repr(keycode), repr(text), repr(modifiers))
+        if keycode[1] == 'backspace':
             self._term_em.write(ctrl.BS)
         elif keycode[1] == 'up':
             self._term_em.write(ctrl.ESC + '[' + esc.CUU)
@@ -49,7 +52,7 @@ class Terminal(TextInput):
         elif 'ctrl' in modifiers:
             if text == 'd':
                 self._term_em.write(b'\004')
-        return False
+        return True
 
     # def on_touch_down(self, touch):
     #     super(Terminal, self).on_touch_down(touch)
