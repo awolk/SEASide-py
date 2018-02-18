@@ -2,15 +2,16 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
+from kivy.metrics import dp, sp
 
 
 class Login(GridLayout):
     def __init__(self, error_message=''):
         super(Login, self).__init__(
             pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            size=(400, 280),
+            size=(dp(300), dp(200)),
             size_hint=(None, None),
-            spacing=30
+            spacing=sp(30)
         )
         self.cols = 1
 
@@ -22,7 +23,7 @@ class Login(GridLayout):
 
         self.subview = GridLayout(
             pos_hint=(0.5, 0.5),
-            spacing=10
+            spacing=sp(10)
         )
         self.subview.cols = 2
         # Username
