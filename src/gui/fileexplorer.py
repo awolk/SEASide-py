@@ -19,7 +19,7 @@ class FileSystemRemote(FileSystemAbstract):
         return self.connection.get_size(fn)
 
     def is_dir(self, fn):
-        fn = "/" + fn[1:]
+        fn = "/" + fn[1:].replace("\\", '/')
         print("isdir" + fn)
         print(self.connection.is_dir(fn))
         return self.connection.is_dir(fn)
@@ -28,7 +28,7 @@ class FileSystemRemote(FileSystemAbstract):
         return fn[1] == "."
 
     def listdir(self, fn):
-        #fn = fn[1:]
+        fn = "/" + fn.replace("\\", '/')
         print("listdir" + fn)
         print(self.connection.list_dir(fn))
         return self.connection.list_dir(fn)

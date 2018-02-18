@@ -89,3 +89,5 @@ class Connection:
             return False
         else:
             return True
+        finally:
+            self._sftp.chdir("/")
