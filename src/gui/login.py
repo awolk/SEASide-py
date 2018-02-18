@@ -11,7 +11,7 @@ class Login(GridLayout):
             pos_hint={'center_x': 0.5, 'center_y': 0.5},
             size=(dp(300), dp(200)),
             size_hint=(None, None),
-            spacing=sp(30)
+            spacing=sp(35)
         )
         self.cols = 1
 
