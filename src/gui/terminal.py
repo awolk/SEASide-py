@@ -33,22 +33,26 @@ class Terminal(TextInput):
 
     def insert_text(self, substring, from_undo=False):
         if from_undo: return
-        self._term_em.write(bytes(substring, 'ascii'))
+        for char in substring:
+            if char == '\n' and 32 in self._term_em._screen.mode:
+                char = '\r'
+            self._term_em.write(bytes(char, 'ascii'))
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         self.cursor = self._term_em.get_cursor()
         print(repr(keycode), repr(text), repr(modifiers))
         w = self._term_em.write
+        cursor_escape = 'O' if 32 in self._term_em._screen.mode else '['
         if keycode[1] == 'backspace':
             return w(ctrl.BS)
         elif keycode[1] == 'up':
-            return w(ctrl.ESC + '[' + esc.CUU)
+            return w(ctrl.ESC + cursor_escape + esc.CUU)
         elif keycode[1] == 'down':
-            return w(ctrl.ESC + '[' + esc.CUD)
+            return w(ctrl.ESC + cursor_escape + esc.CUD)
         elif keycode[1] == 'left':
-            return w(ctrl.ESC + '[' + esc.CUB)
+            return w(ctrl.ESC + cursor_escape + esc.CUB)
         elif keycode[1] == 'right':
-            return w(ctrl.ESC + '[' + esc.CUF)
+            return w(ctrl.ESC + cursor_escape + esc.CUF)
         elif 'ctrl' in modifiers:
             if text == ' ':
                 return w(b'\000')
