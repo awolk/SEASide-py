@@ -75,11 +75,8 @@ class Connection:
         return size
 
     def list_dir(self, path):
-        files = self._sftp.listdir(path)
-        for i, file in enumerate(files):
-            file = files[i]
-            files[i] = path + file
-        return files
+        prefix = path + '/' if path != '/' else path
+        return [prefix + filename for filename in self._sftp.listdir(path)]
 
 
     def is_dir(self, path):
