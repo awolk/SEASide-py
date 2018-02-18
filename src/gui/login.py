@@ -26,14 +26,17 @@ class Login(GridLayout):
         self._username = TextInput(
             multiline=False,
             write_tab=False,
-            cursor_color=(0, 0, 0, 1))
+            cursor_color=(0, 0, 0, 1),
+            on_text_validate=self._attempt_login
+        )
         self.subview.add_widget(self._username)
         self.subview.add_widget(Label(text='Password'))
         self._password = TextInput(
             password=True,
             multiline=False,
             write_tab=False,
-            cursor_color=(0, 0, 0, 1))
+            cursor_color=(0, 0, 0, 1),
+            on_text_validate=self._attempt_login)
         self._username.focus = True
         self._username.focus_next = self._password
         self._username.focus_previous = self._password
@@ -45,7 +48,7 @@ class Login(GridLayout):
         self._submit = Button(
             text='Login',
             size_hint=(1, 0.5),
-            on_press=self._login_attempted)
+            on_press=self._attempt_login)
         self.add_widget(self.subview)
         self.add_widget(self._submit)
 
@@ -54,5 +57,5 @@ class Login(GridLayout):
             text=error_message,
             size_hint=(1, 0.5))
 
-    def _login_attempted(self, *args):
+    def _attempt_login(self, *args):
         self.parent.give_credentials(self._username.text, self._password.text)
