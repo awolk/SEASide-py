@@ -45,10 +45,11 @@ class MainWindow(FloatLayout):
         top_layout.add_widget(self._spinner)
         # Tab view
         self._tab_view = TabbedPanel()
+        self._tab_view
         self._tab_view.default_tab_text = self._spinner.text
         self._tab_view.default_tab_content = MasterTab(SERVERS[self._spinner.text], self.get_username())
         # Build window
-        self.add_widget(top_layout, 1)
+        self.add_widget(top_layout)
         self.add_widget(self._tab_view)
 
     def _new_tab(self, *args):
