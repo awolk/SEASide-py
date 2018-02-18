@@ -8,8 +8,14 @@ class Connection:
         self._chan = None
 
     def create_chan(self):
-        self._chan = self._client.invoke_shell()
-        self._chan.get_pty('vt100', width=80, height=24)
+        try:
+            self._chan.get_pty(term='vt100', width=80, height=24)
+        except paramiko.ssh_exception.SSHException as e:
+            print(e)
+        try:
+            self._chan = self._client.invoke_shell()
+        except paramiko.ssh_exception.SSHException as e:
+            print(e)
         self._chan.settimeout(None)
 
     def attempt_connection(self, username):
