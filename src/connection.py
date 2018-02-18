@@ -14,7 +14,7 @@ class Connection:
         self.client.load_system_host_keys()
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
-            self.client.connect(self.server, username=username, look_for_keys=True)
+            self.client.connect(self._server, username=username, look_for_keys=True)
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
             print(e)
             return False
@@ -26,8 +26,7 @@ class Connection:
         self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         try:
             self.client.connect(self.server, username=username, password=password)
-        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
-            print(e)
+        except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) :
             return False
         else:
             return True
@@ -57,6 +56,13 @@ class Connection:
         """returns True if there is buffered data returns False otherwise"""
         pass
 
-    def recieve_ssh_data(self):
-        """returns buffered recieved data"""
+    def receive_ssh_data(self):
+        """returns buffered received data"""
         pass
+
+    def resize_term(self, cols=80, rows=24):
+        """resizes the terminal """
+        try:
+            self._chan.resize_pty(width=cols, height=rows)
+        except (paramiko.SSHException) as e:
+            print(e)
