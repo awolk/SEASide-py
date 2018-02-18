@@ -22,3 +22,12 @@ class TerminalEmulator:
 
     def get_cursor(self):
         return self._screen.cursor.x, self._screen.cursor.y
+
+    def is_dirty(self):
+        return bool(self._screen.dirty)
+
+    def clear_dirty(self):
+        self._screen.dirty.clear()
+
+    def get_text(self):
+        return '\n'.join(self._screen.display)
