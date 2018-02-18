@@ -57,6 +57,7 @@ class MainWindow(FloatLayout):
         header = TabbedPanelHeader(text=server_name)
         header.content = MasterTab(server, self.get_username())
         self._tab_view.add_widget(header)
+        self._tab_view.switch_to(header)
 
     def get_username(self):
         return self._username
