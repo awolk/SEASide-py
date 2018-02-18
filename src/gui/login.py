@@ -29,5 +29,5 @@ class Login(GridLayout):
         self.add_widget(self.subview)
         self.add_widget(self._submit)
 
-    def _login_pressed(self):
+    def _login_pressed(self, *args):
         self.parent.give_credentials(self._username.text, self._password.text)
