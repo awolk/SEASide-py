@@ -13,32 +13,10 @@ File Structure
                 * terminal.py - Terminal Widget
                 * fileexplorer.py - File Explorer Widget
 
-Interface
----------
-Connection(username):
-    attempt_connection:
-        returns True if connection successful
-        returns False is unable to authenticate
-    attempt_login(username, password):
-        returns True if login (and thus connection) successful
-        returns False if unable to authenticate
-    send_ssh_bytes(bytes)
-    has_ssh_data():
-        returns True if there is buffered data
-        returns False otherwise
-    receive_ssh_data():
-        returns buffered received data
-
-MasterTab:
-    give_credentials:
-        receive credentials from child Login
-
-Login:
-    init(error_message?):
-        Display error_message (if exists) on startup
-
 Project Setup Guide
 -------------------
+First, install Kivy requisites for your system: https://kivy.org/docs/installation/installation.html
+
 To create your virtual environment, from project directory:
     pipenv install
 
@@ -51,14 +29,6 @@ To select the virtual environment in PyCharm:
     Existing environment
     Find and select your pipenv virtual environment
 
-When you want to push you changes to GitHub:
-    VCS -> Commit
-    VCS -> Git -> Fetch
-    On the bottom-right of the window:
-        Git
-        Remote Branches: origin/master -> Merge
-    VCS -> Git -> Push
-
 To run through PyCharm:
     Select empty selector on top right
     Edit Configurations
@@ -66,3 +36,23 @@ To run through PyCharm:
         Name: SEASide
         Script path: main.py
         Working directory: set to main repository directory
+
+Version Control
+---------------
+General Guidelines:
+* Major changes should be done in branches
+* Commit messages should be descriptive and written as actions:
+  Ex: Add login fields and error message to GUI
+
+Making a major change that should be reviewed:
+    VCS -> Commit
+    VCS -> Create Pull Request
+    Once the pull request is created, assign reviewers
+
+When you want to push your changes to master on GitHub:
+    VCS -> Commit
+    VCS -> Git -> Fetch
+    On the bottom-right of the window:
+        Git
+        Remote Branches: origin/master -> Merge
+    VCS -> Git -> Push
