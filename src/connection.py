@@ -9,6 +9,8 @@ class Connection:
 
     def create_chan(self):
         self._chan = self._client.invoke_shell()
+        self._chan.get_pty('vt100', width=80, height=24)
+        self._chan.settimeout(None)
 
     def attempt_connection(self, username):
         """ returns True if connection successful returns False is unable to authenticate"""
@@ -60,7 +62,7 @@ class Connection:
         pass
 
     def resize_term(self, cols=80, rows=24):
-        """resizes the terminal """
+        """resizes the terminal"""
         try:
             self._chan.resize_pty(width=cols, height=rows)
         except paramiko.SSHException as e:
