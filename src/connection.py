@@ -70,17 +70,22 @@ class Connection:
             print(e)
 
     def get_size(self, filename):
-        stat = self._sftp.file.lstat(filename)
+        stat = self._sftp.lstat(filename)
         size = stat.st_size
         return size
 
     def list_dir(self, path):
-        self._sftp.listdir(path)
+        files = self._sftp.listdir(path)
+        for i, file in enumerate(files):
+            file = files[i]
+            files[i] = path + "/" + file
+        return files
+
 
     def is_dir(self, path):
         try:
             self._sftp.chdir(path)
-        except IOError:
+        except (IOError, paramiko.sftp.SFTPError):
             return False
         else:
             return True
