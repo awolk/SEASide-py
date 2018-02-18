@@ -36,22 +36,36 @@ class Terminal(TextInput):
         self._term_em.write(bytes(substring, 'ascii'))
 
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
-        super(Terminal, self).keyboard_on_key_down(window, keycode, text, modifiers)
         self.cursor = self._term_em.get_cursor()
         print(repr(keycode), repr(text), repr(modifiers))
+        w = self._term_em.write
         if keycode[1] == 'backspace':
-            self._term_em.write(ctrl.BS)
+            return w(ctrl.BS)
         elif keycode[1] == 'up':
-            self._term_em.write(ctrl.ESC + '[' + esc.CUU)
+            return w(ctrl.ESC + '[' + esc.CUU)
         elif keycode[1] == 'down':
-            self._term_em.write(ctrl.ESC + '[' + esc.CUD)
+            return w(ctrl.ESC + '[' + esc.CUD)
         elif keycode[1] == 'left':
-            self._term_em.write(ctrl.ESC + '[' + esc.CUB)
+            return w(ctrl.ESC + '[' + esc.CUB)
         elif keycode[1] == 'right':
-            self._term_em.write(ctrl.ESC + '[' + esc.CUF)
+            return w(ctrl.ESC + '[' + esc.CUF)
         elif 'ctrl' in modifiers:
-            if text == 'd':
-                self._term_em.write(b'\004')
+            if text == ' ':
+                return w(b'\000')
+            elif 'a' <= text <= 'z':
+                return w(chr(ord(text) - ord('a') + 1))
+            elif text == '[':
+                return w('\033')
+            elif text == '\\':
+                return w('\034')
+            elif text == ']':
+                return w('\035')
+            elif text == '~':
+                return w('\036')
+            elif text == '?':
+                return w('\037')
+        else:
+            super(Terminal, self).keyboard_on_key_down(window, keycode, text, modifiers)
         return True
 
     # def on_touch_down(self, touch):
