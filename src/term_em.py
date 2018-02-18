@@ -19,3 +19,6 @@ class TerminalEmulator:
     def resize(self, cols=80, rows=24):
         self._screen.resize(cols, rows)
         self._connection.resize_term(cols, rows)
+
+    def get_cursor(self):
+        return self._screen.cursor.x, self._screen.cursor.y
