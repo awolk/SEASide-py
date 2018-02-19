@@ -16,7 +16,6 @@ class MainWindow(FloatLayout):
         Window.size = (1000, 560)
         # Connection
         self._config = Configuration()
-        self._username = self._config.get_username()
         server_names = tuple(sorted(SERVERS.keys()))
         self._spinner = Spinner(
             text=self._config.get_default_server(),
@@ -24,7 +23,6 @@ class MainWindow(FloatLayout):
             size_hint=(None, None),
             size=(dp(80), dp(60))
         )
-        print(self._config.get_default_server())
         button = Button(
             text='Connect',
             size=(dp(80), dp(60)),

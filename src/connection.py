@@ -11,16 +11,14 @@ class Connection:
         self._sftp = None
         self._home_dir = None
 
-    def _create_chan(self):
+    def _build_connection(self):
         try:
             self._chan = self._client.invoke_shell()
+            self._sftp = self._client.open_sftp()
+            self._sftp.chdir('.')
+            self._home_dir = self._sftp.getcwd()
         except paramiko.ssh_exception.SSHException as e:
             print(e)
-
-    def _create_sftp(self):
-        self._sftp = self._client.open_sftp()
-        self._sftp.chdir('.')
-        self._home_dir = self._sftp.getcwd()
 
     def attempt_connection(self, username):
         """Returns True if connection successful returns False is unable to authenticate"""
@@ -30,19 +28,17 @@ class Connection:
             print(e)
             return False
         else:
-            self._create_chan()
-            self._create_sftp()
+            self._build_connection()
             return True
 
     def attempt_login(self, username, password):
         try:
-            self._client.connect(self._server, username=username, password=password)
+            self._client.connect(self._server, username=username, password=password, look_for_keys=False)
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
             print(e)
             return False
         else:
-            self._create_chan()
-            self._create_sftp()
+            self._build_connection()
             return True
 
     def send_ssh_bytes(self, bytes):

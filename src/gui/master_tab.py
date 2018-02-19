@@ -20,12 +20,12 @@ class MasterTab(FloatLayout):
     def get_connection(self):
         return self._connection
 
-    def connection_failed(self):
+    def connection_failed(self, error=''):
         self.clear_widgets()
-        self._login.update_error('Login Failed')
+        self._login.update_error(error)
         self.add_widget(self._login)
 
-    def give_credentials(self, username, password=None):
+    def give_credentials(self, username, password):
         self.clear_widgets()
         self.add_widget(self._loader)
         self._config.set_username(username)
