@@ -6,7 +6,7 @@ from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelHeader
 from kivy.metrics import dp, sp
 from kivy.core.window import Window
 
-from src.gui.master_tab import MasterTab
+from gui.master_tab import MasterTab
 
 SERVERS = {
     'lnxsrv': 'lnxsrv.seas.ucla.edu',

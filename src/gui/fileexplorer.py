@@ -1,5 +1,4 @@
-from kivy.uix.widget import Widget
-from kivy.uix.filechooser import FileSystemLocal, FileChooserListLayout, FileChooser, FileSystemAbstract
+from kivy.uix.filechooser import FileChooserListLayout, FileChooser, FileSystemAbstract
 
 
 class FileExplorer(FileChooser):

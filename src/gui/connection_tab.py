@@ -1,6 +1,6 @@
 from kivy.uix.floatlayout import FloatLayout
-from src.gui.fileexplorer import FileExplorer
-from src.gui.terminal import Terminal
+from gui.fileexplorer import FileExplorer
+from gui.terminal import Terminal
 
 
 class ConnectionTab(FloatLayout):

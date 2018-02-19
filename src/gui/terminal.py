@@ -1,6 +1,6 @@
 from kivy.uix.textinput import TextInput
 from kivy.clock import Clock
-from src.term_em import TerminalEmulator
+from term_em import TerminalEmulator
 from pyte import control as ctrl, escape as esc
 
 BG_COLOR = (0, 0, 0, 1)

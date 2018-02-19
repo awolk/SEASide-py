@@ -1,8 +1,8 @@
 from kivy.uix.floatlayout import FloatLayout
-from src.gui.loader import Loader
-from src.gui.login import Login
-from src.gui.connection_tab import ConnectionTab
-from src.connection import Connection
+from gui.loader import Loader
+from gui.login import Login
+from gui.connection_tab import ConnectionTab
+from connection import Connection
 from kivy.clock import Clock
 
 

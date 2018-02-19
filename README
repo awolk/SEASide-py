@@ -30,12 +30,14 @@ To select the virtual environment in PyCharm:
     Find and select your pipenv virtual environment
 
 To run through PyCharm:
+    Right click the 'src' directory
+        Mark directory as -> Sources root
     Select empty selector on top right
     Edit Configurations
     + -> Python
         Name: SEASide
         Script path: main.py
-        Working directory: set to main repository directory
+        Working directory: set to 'src' directory
 
 Version Control
 ---------------
