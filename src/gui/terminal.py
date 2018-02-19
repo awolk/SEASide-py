@@ -22,7 +22,7 @@ class Terminal(TextInput):
 
     def start(self):
         self._term_em = TerminalEmulator(self.parent.get_connection())
-        Clock.schedule_interval(self._check_input, 0.1)
+        Clock.schedule_interval(self._check_input, 0)
 
     def _check_input(self, dt):
         self._term_em.receive()
