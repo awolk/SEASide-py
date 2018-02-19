@@ -61,9 +61,7 @@ class Login(GridLayout):
         self.add_widget(self._submit)
 
     def update_error(self, error_message):
-        self._error_message = Label(
-            text=error_message,
-            size_hint=(1, 0.5))
+        self._error_message.text =  error_message
 
     def _attempt_login(self, *args):
         self.parent.give_credentials(self._username.text, self._password.text)
