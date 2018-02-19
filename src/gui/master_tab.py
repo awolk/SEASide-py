@@ -7,15 +7,15 @@ from kivy.clock import Clock
 
 
 class MasterTab(FloatLayout):
-    def __init__(self, server, username):
+    def __init__(self, server, config):
         super(MasterTab, self).__init__()
-        self._username = username
         self._connection = Connection(server)
         self._loader = Loader()
         self._login = Login()
         self._display = ConnectionTab()
         self.add_widget(self._loader)
-        Clock.schedule_once(lambda dt: self._loader.connect(username), 0)
+        self._config = config
+        Clock.schedule_once(lambda dt: self._loader.connect(config.get_username()), 0)
 
     def get_connection(self):
         return self._connection
@@ -28,6 +28,7 @@ class MasterTab(FloatLayout):
     def give_credentials(self, username, password=None):
         self.clear_widgets()
         self.add_widget(self._loader)
+        self._config.set_username(username)
         Clock.schedule_once(lambda dt: self._loader.connect(username, password), 0)
 
     def connection_successful(self):

@@ -33,6 +33,6 @@ class Configuration:
 
     def set_default_server(self, server):
         if server in server_config.SERVERS.keys():
-            self._write('info', 'sever', server)
+            self._write('info', 'server', server)
         else:
             raise Exception('Invalid server specified')

@@ -8,21 +8,23 @@ from kivy.core.window import Window
 
 from gui.master_tab import MasterTab
 from server_config import SERVERS
-
+from savedata import Configuration
 
 class MainWindow(FloatLayout):
     def __init__(self):
         super(MainWindow, self).__init__()
         Window.size = (1000, 560)
-        self._username = ''  # TODO: Get username somehow? (or don't)
         # Connection
+        self._config = Configuration()
+        self._username = self._config.get_username()
         server_names = tuple(sorted(SERVERS.keys()))
         self._spinner = Spinner(
-            text=server_names[0],
+            text=self._config.get_default_server(),
             values=server_names,
             size_hint=(None, None),
             size=(dp(80), dp(60))
         )
+        print(self._config.get_default_server())
         button = Button(
             text='Connect',
             size=(dp(80), dp(60)),
@@ -40,9 +42,8 @@ class MainWindow(FloatLayout):
         top_layout.add_widget(self._spinner)
         # Tab view
         self._tab_view = TabbedPanel()
-        self._tab_view
         self._tab_view.default_tab_text = self._spinner.text
-        self._tab_view.default_tab_content = MasterTab(SERVERS[self._spinner.text], self.get_username())
+        self._tab_view.default_tab_content = MasterTab(SERVERS[self._spinner.text], self._config)
         # Build window
         self.add_widget(top_layout)
         self.add_widget(self._tab_view)
@@ -50,10 +51,11 @@ class MainWindow(FloatLayout):
     def _new_tab(self, *args):
         server_name = self._spinner.text
         server = SERVERS[server_name]
+        self._config.set_default_server(server_name)
         header = TabbedPanelHeader(text=server_name)
-        header.content = MasterTab(server, self.get_username())
+        header.content = MasterTab(server, self._config)
         self._tab_view.add_widget(header)
         self._tab_view.switch_to(header)
 
     def get_username(self):
-        return self._username
+        return self._config.get_username()
