@@ -7,12 +7,7 @@ from kivy.metrics import dp, sp
 from kivy.core.window import Window
 
 from gui.master_tab import MasterTab
-
-SERVERS = {
-    'lnxsrv': 'lnxsrv.seas.ucla.edu',
-    'lnxsrv07': 'lnxsrv07.seas.ucla.edu',
-    'lnxsrv09': 'lnxsrv09.seas.ucla.edu'
-}
+from server_config import SERVERS
 
 
 class MainWindow(FloatLayout):

@@ -12,13 +12,7 @@ pyinstaller = "*"
 cython = "*"
 "d4a76af" = {file = "https://github.com/kivy/kivy/archive/master.zip"}
 paramiko = "*"
-docutils = "*"
-pygments = "*"
-"pypiwin32" = "*"
-"kivy.deps.sdl2" = "*"
-"kivy.deps.glew" = "*"
-"kivy.deps.gstreamer" = "*"
-kivy = "*"
+appdirs = "*"
 
 
 [dev-packages]
