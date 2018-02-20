@@ -13,6 +13,7 @@ cython = "*"
 "d4a76af" = {file = "https://github.com/kivy/kivy/archive/master.zip"}
 paramiko = "*"
 appdirs = "*"
+"pyqt5" = "*"
 
 
 [dev-packages]

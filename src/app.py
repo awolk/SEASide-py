@@ -1,11 +1,13 @@
-from kivy.app import App
-from kivy.config import Config
-
+import sys
+from PyQt5.QtWidgets import QApplication
 from gui.main_window import MainWindow
 
-Config.set('kivy', 'exit_on_escape', 0)
-Config.set('graphics', 'resizable', 0)
 
-class SEASideApp(App):
-    def build(self):
-        return MainWindow()
+class SEASideApp:
+    def __init__(self):
+        self._app = QApplication(sys.argv)
+        self._w = MainWindow()
+
+    def run(self):
+        self._w.show()
+        self._app.exec_()
