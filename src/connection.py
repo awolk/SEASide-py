@@ -1,5 +1,25 @@
 import paramiko
+import pathlib
+import os.path
 
+_key_dir = os.path.join(os.path.expanduser('~'), '.ssh')
+pathlib.Path(_key_dir).mkdir(parents=True, exist_ok=True) # make ~/.ssh folder if necessary
+_priv_key_path = os.path.join(_key_dir, 'seaside_rsa')
+_pub_key_path = os.path.join(_key_dir, 'seaside_rsa.pub')
+
+
+def _ensure_key_exists():
+    """Ensure a keypair for SEASide exists and return the text of the public key"""
+    if os.path.exists(_priv_key_path) and os.path.exists(_pub_key_path):
+        with open(_pub_key_path, 'r') as pub_key_file:
+            return pub_key_file.read()
+    # Create key-pair for SEASide
+    key = paramiko.RSAKey.generate(bits=1024, progress_func=lambda arg: ...)
+    key.write_private_key_file(_priv_key_path) # No password protection - may want to add later
+    pub_key_text = '{} {} SEASide\n'.format(key.get_name(), key.get_base64())
+    with open(_pub_key_path, 'w') as pub_key_file:
+        pub_key_file.write(pub_key_text)
+    return pub_key_text
 
 class Connection:
     def __init__(self, server):
@@ -20,6 +40,15 @@ class Connection:
         except paramiko.ssh_exception.SSHException as e:
             print(e)
 
+    def _save_keys(self):
+        pub_key_text = _ensure_key_exists()
+        try:
+            self._sftp.stat('./.ssh')
+        except FileNotFoundError:
+            self._sftp.mkdir('./.ssh')
+        with self._sftp.file('./.ssh/authorized_keys', 'a') as authorized_keys:
+            authorized_keys.write(pub_key_text)
+
     def attempt_connection(self, username):
         """Returns True if connection successful returns False is unable to authenticate"""
         try:
@@ -33,12 +62,13 @@ class Connection:
 
     def attempt_login(self, username, password):
         try:
-            self._client.connect(self._server, username=username, password=password, look_for_keys=False)
+            self._client.connect(self._server, username=username, password=password)
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
             print(e)
             return False
         else:
             self._build_connection()
+            self._save_keys()
             return True
 
     def send_ssh_bytes(self, bytes):
