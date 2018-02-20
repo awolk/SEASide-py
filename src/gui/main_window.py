@@ -61,7 +61,7 @@
 from PyQt5.QtWidgets import QMainWindow, QComboBox, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QTabWidget
 from PyQt5.QtCore import pyqtSlot
 
-#from gui.master_tab import MasterTab
+from gui.master_tab import MasterTab
 from server_config import SERVERS
 from savedata import Configuration
 
@@ -80,7 +80,8 @@ class MainWindow(QMainWindow):
         # Server selection dropdown
         self._dropdown = QComboBox()
         self._dropdown.addItems(server_names)
-        self._dropdown.setCurrentIndex(self._dropdown.findText(self._config.get_default_server()))
+        default_server_name = self._config.get_default_server()
+        self._dropdown.setCurrentIndex(self._dropdown.findText(default_server_name))
         # Connect button
         self._button = QPushButton('Connect')
         self._button.clicked.connect(self._new_tab)
@@ -88,6 +89,9 @@ class MainWindow(QMainWindow):
         self._tab_view = QTabWidget()
         self._tab_view.setTabsClosable(True)
         self._tab_view.tabCloseRequested.connect(self._close_tab)
+        # Default tab
+        default_tab = MasterTab(SERVERS[self._config.get_default_server()], self._config)
+        self._tab_view.addTab(default_tab, default_server_name)
         # Layout setup
         conn_layout = QHBoxLayout()
         top_layout = QVBoxLayout()
@@ -104,7 +108,7 @@ class MainWindow(QMainWindow):
         server_name = str(self._dropdown.currentText())
         server = SERVERS[server_name]
         self._config.set_default_server(server_name)
-        tab = QWidget()  # TODO: Implement
+        tab = MasterTab(server, self._config)
         self._tab_view.addTab(tab, server_name)
 
     @pyqtSlot(int)
