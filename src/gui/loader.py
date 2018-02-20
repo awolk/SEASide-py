@@ -30,11 +30,11 @@ class Loader(QLabel):
         self.setAlignment(Qt.AlignHCenter)
 
     def connect(self, username=None, password=None):
-        if not username:
+        if username is None:
             return self._parent.connection_failed()
         conn = self._parent.get_connection()
         success = conn.attempt_login(username, password) if password else conn.attempt_connection(username)
         if success:
-            self._parent.connection_successful()
+            self._parent.connection_successful(username)
         else:
             self._parent.connection_failed('Login failed')
