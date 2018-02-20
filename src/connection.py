@@ -21,6 +21,7 @@ def _ensure_key_exists():
         pub_key_file.write(pub_key_text)
     return pub_key_text
 
+
 class Connection:
     def __init__(self, server):
         self._server = server
@@ -116,3 +117,6 @@ class Connection:
             return True
         finally:
             self._sftp.chdir("/")
+
+    def get_home_dir(self):
+        return self._home_dir

@@ -19,7 +19,7 @@ class ConnectionTab(FloatLayout):
 
     def start(self):
         self._term.start()
-        self._file_explorer.start()
+        self._file_explorer.start(self.get_connection().get_home_dir())
 
     def get_connection(self):
         return self.parent.get_connection()

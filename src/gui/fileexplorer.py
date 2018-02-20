@@ -2,9 +2,10 @@ from kivy.uix.filechooser import FileChooserListLayout, FileChooser, FileSystemA
 
 
 class FileExplorer(FileChooser):
-    def start(self):
+    def start(self, root_path='/'):
         self.connection = self.parent.get_connection()
         self.file_system = FileSystemRemote(self.connection)
+        self.rootpath = root_path
         self.add_widget(FileChooserListLayout())
 
 class FileSystemRemote(FileSystemAbstract):
