@@ -52,7 +52,7 @@ class Connection:
     def attempt_connection(self, username):
         """Returns True if connection successful returns False is unable to authenticate"""
         try:
-            self._client.connect(self._server, username=username, look_for_keys=True)
+            self._client.connect(self._server, username=username, key_filename=_priv_key_path)
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
             print(e)
             return False
@@ -62,7 +62,7 @@ class Connection:
 
     def attempt_login(self, username, password):
         try:
-            self._client.connect(self._server, username=username, password=password)
+            self._client.connect(self._server, username=username, password=password, look_for_keys=False)
         except (paramiko.AuthenticationException, paramiko.ssh_exception.SSHException) as e:
             print(e)
             return False
