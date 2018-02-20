@@ -19,13 +19,22 @@
 #             self.parent.connection_successful()
 #         else:
 #             self.parent.connection_failed('Login failed')
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtCore import Qt
 
 
-class Loader(QWidget):
-    def __init__(self):
-        super(Loader, self).__init__()
-        ...
+class Loader(QLabel):
+    def __init__(self, parent):
+        self._parent = parent
+        super(Loader, self).__init__('Loading...')
+        self.setAlignment(Qt.AlignHCenter)
 
     def connect(self, username=None, password=None):
-        ...
+        if not username:
+            return self._parent.connection_failed()
+        conn = self._parent.get_connection()
+        success = conn.attempt_login(username, password) if password else conn.attempt_connection(username)
+        if success:
+            self._parent.connection_successful()
+        else:
+            self._parent.connection_failed('Login failed')

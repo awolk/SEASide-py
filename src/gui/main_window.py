@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         # Layout setup
         conn_layout = QHBoxLayout()
         top_layout = QVBoxLayout()
+        # conn_layout.addStretch(1)
         conn_layout.addWidget(self._button)
         conn_layout.addWidget(self._dropdown)
         conn_widg = QWidget()

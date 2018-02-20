@@ -37,7 +37,7 @@
 #         self._display.start()
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 from gui.loader import Loader
 from gui.login import Login
 from gui.connection_tab import ConnectionTab
@@ -50,10 +50,12 @@ class MasterTab(QWidget):
         self._connection = Connection(server)
         self._config = config
         # Build GUI
-        self._loader = Loader()
-        self._login = Login()
+        self._loader = Loader(self)
+        self._login = Login(self)
         self._display = ConnectionTab()
         self._layout = QVBoxLayout()
+        self._layout.addWidget(self._loader, Qt.AlignCenter)
+        self.setLayout(self._layout)
         QTimer.singleShot(0, lambda: self._loader.connect(config.get_username()))
 
     def get_connection(self):
@@ -61,6 +63,7 @@ class MasterTab(QWidget):
 
     def connection_failed(self, error=''):
         self._layout.removeWidget(self._loader)  # Remove Loader
+        self._loader.deleteLater()
         self._login.update_error(error)          # Add Login
         self._layout.addWidget(self._login)
 
