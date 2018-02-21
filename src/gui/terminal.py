@@ -1,89 +1,72 @@
-# from kivy.uix.textinput import TextInput
-# from kivy.clock import Clock
-# from term_em import TerminalEmulator
-# from pyte import control as ctrl, escape as esc
-#
-# BG_COLOR = (0, 0, 0, 1)
-# FG_COLOR = (1, 1, 1, 1)
-#
-#
-# class Terminal(TextInput):
-#     def __init__(self, **kwargs):
-#         super(Terminal, self).__init__(
-#             text='',
-#             font_name="RobotoMono-Regular",
-#             background_color=BG_COLOR,
-#             foreground_color=FG_COLOR,
-#             cursor_color=FG_COLOR,
-#             cursor_blink=False,
-#             **kwargs
-#         )
-#         self._term_em = None
-#
-#     def start(self):
-#         self._term_em = TerminalEmulator(self.parent.get_connection())
-#         Clock.schedule_interval(self._check_input, 0)
-#
-#     def _check_input(self, dt):
-#         self._term_em.receive()
-#         self.cursor = self._term_em.get_cursor()
-#         if self._term_em.is_dirty():
-#             self._term_em.clear_dirty()
-#             self.text = self._term_em.get_text()
-#
-#     def insert_text(self, substring, from_undo=False):
-#         if from_undo: return
-#         for char in substring:
-#             if char == '\n' and 32 in self._term_em._screen.mode:
-#                 char = '\r'
-#             self._term_em.write(bytes(char, 'ascii'))
-#
-#     def keyboard_on_key_down(self, window, keycode, text, modifiers):
-#         self.cursor = self._term_em.get_cursor()
-#         print(repr(keycode), repr(text), repr(modifiers))
-#         w = self._term_em.write
-#         cursor_escape = 'O' if 32 in self._term_em._screen.mode else '['
-#         if keycode[1] == 'backspace':
-#             return w(ctrl.BS)
-#         elif keycode[1] == 'up':
-#             return w(ctrl.ESC + cursor_escape + esc.CUU)
-#         elif keycode[1] == 'down':
-#             return w(ctrl.ESC + cursor_escape + esc.CUD)
-#         elif keycode[1] == 'left':
-#             return w(ctrl.ESC + cursor_escape + esc.CUB)
-#         elif keycode[1] == 'right':
-#             return w(ctrl.ESC + cursor_escape + esc.CUF)
-#         elif 'ctrl' in modifiers:
-#             if text == ' ':
-#                 return w(b'\000')
-#             elif 'a' <= text <= 'z':
-#                 return w(chr(ord(text) - ord('a') + 1))
-#             elif text == '[':
-#                 return w('\033')
-#             elif text == '\\':
-#                 return w('\034')
-#             elif text == ']':
-#                 return w('\035')
-#             elif text == '~':
-#                 return w('\036')
-#             elif text == '?':
-#                 return w('\037')
-#         else:
-#             super(Terminal, self).keyboard_on_key_down(window, keycode, text, modifiers)
-#         return True
-#
-#     # def on_touch_down(self, touch):
-#     #     super(Terminal, self).on_touch_down(touch)
-#     #     self.cursor = self._term_em.get_cursor()
-#     #     return True
-
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QTextEdit
+from PyQt5.QtCore import Qt, QTimer, pyqtSlot, QPoint
+from PyQt5.QtGui import QFontDatabase, QTextCursor
+from pyte import control as ctrl, escape as esc
+from term_em import TerminalEmulator
 
 
-class Terminal(QWidget):
+class Terminal(QTextEdit):
     def __init__(self, parent):
         super(Terminal, self).__init__()
+        self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
+        self.setFontPointSize(12)
+        # self.setStyleSheet('background-color: black; color: white')
         self._parent = parent
 
     def start(self):
-        ...
+        self._term_em = TerminalEmulator(self._parent.get_connection())
+        timer = QTimer(self)
+        timer.timeout.connect(self._check_input)
+        timer.start(0)
+
+    def keyPressEvent(self, evt):
+        key = evt.key()
+
+        modifiers = evt.modifiers()
+        shift = bool(modifiers & Qt.ShiftModifier)
+        control = bool(modifiers & Qt.ControlModifier)
+        alt = bool(modifiers & Qt.AltModifier)
+        meta = bool(modifiers & Qt.MetaModifier)  # ctrl
+
+        text = evt.text()
+
+        w = self._term_em.write
+        cursor_escape = 'O' if 32 in self._term_em._screen.mode else '['
+        if key == Qt.Key_Backspace:
+            return w(ctrl.BS)
+        elif key == Qt.Key_Up:
+            return w(ctrl.ESC + cursor_escape + esc.CUU)
+        elif key == Qt.Key_Down:
+            return w(ctrl.ESC + cursor_escape + esc.CUD)
+        elif key == Qt.Key_Left:
+            return w(ctrl.ESC + cursor_escape + esc.CUB)
+        elif key == Qt.Key_Right:
+            return w(ctrl.ESC + cursor_escape + esc.CUF)
+        elif meta:
+            if text == ' ':
+                return w(b'\000')
+            elif ord('A') <= key <= ord('Z'):
+                return w(chr(key - ord('A') + 1))
+            elif text == '[':
+                return w('\033')
+            elif text == '\\':
+                return w('\034')
+            elif text == ']':
+                return w('\035')
+            elif text == '~':
+                return w('\036')
+            elif text == '?':
+                return w('\037')
+        else:
+            w(text)
+
+    @pyqtSlot()
+    def _check_input(self):
+        self._term_em.receive()
+        x, y = self._term_em.get_cursor()
+        curs = self.textCursor()
+        curs.setPosition(x + 81 * y)  # TODO: Remove hardcoded width
+        self.setTextCursor(curs)
+        if self._term_em.is_dirty():
+            self._term_em.clear_dirty()
+            self.setText(self._term_em.get_text())
