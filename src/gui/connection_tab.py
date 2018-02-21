@@ -24,15 +24,20 @@
 #     def get_connection(self):
 #         return self.parent.get_connection()
 
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from gui.fileexplorer import FileExplorer
 from gui.terminal import Terminal
+
 
 class ConnectionTab(QWidget):
     def __init__(self):
         super(ConnectionTab, self).__init__()
+        self._layout = QHBoxLayout()
         self._file_explorer = FileExplorer(self)
         self._term = Terminal(self)
+        self._layout.addWidget(self._file_explorer)
+        self._layout.addWidget(self._term)
+        self.setLayout(self._layout)
 
     def start(self):
         self._term.start()
