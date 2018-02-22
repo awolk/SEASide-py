@@ -15,9 +15,9 @@ class TerminalEmulator:
         if self._connection.has_ssh_data():
             self._stream.feed(self._connection.receive_ssh_data())
 
-    def resize(self, cols=80, rows=24):
-        self._screen.resize(cols, rows)
-        self._connection.resize_term(cols, rows)
+    def resize(self, rows=24, cols=80):
+        self._connection.resize_term(rows, cols)
+        self._screen.resize(rows, cols)
 
     def get_cursor(self):
         return self._screen.cursor.x, self._screen.cursor.y

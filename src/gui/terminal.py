@@ -8,16 +8,34 @@ from term_em import TerminalEmulator
 class Terminal(QTextEdit):
     def __init__(self, parent):
         super(Terminal, self).__init__()
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
         self.setFontPointSize(12)
+        self._text_width = self.fontMetrics().maxWidth() + 1.5  # This could be cleaner
+        self._text_height = self.fontMetrics().lineSpacing() + 2.3  # This could be cleaner too
         # self.setStyleSheet('background-color: black; color: white')
         self._parent = parent
+        self._term_em = None
 
     def start(self):
         self._term_em = TerminalEmulator(self._parent.get_connection())
+        self._resize(self.width(), self.height())
         timer = QTimer(self)
         timer.timeout.connect(self._check_input)
-        timer.start(0)
+        timer.start(0)  # TODO: Prevent input checking blocking: make changing text more efficient (using dirty fields)
+
+    def _resize(self, width, height):
+        self._height = int(height / self._text_height)
+        self._width = int(width / self._text_width)
+        self._term_em.resize(self._height, self._width)
+
+    def resizeEvent(self, evt):
+        size = evt.size()
+        width = size.width()
+        height = size.height()
+        self._resize(width, height)
+        super(Terminal, self).resizeEvent(evt)
 
     def keyPressEvent(self, evt):
         key = evt.key()
@@ -63,10 +81,10 @@ class Terminal(QTextEdit):
     @pyqtSlot()
     def _check_input(self):
         self._term_em.receive()
-        x, y = self._term_em.get_cursor()
-        curs = self.textCursor()
-        curs.setPosition(x + 81 * y)  # TODO: Remove hardcoded width
-        self.setTextCursor(curs)
         if self._term_em.is_dirty():
             self._term_em.clear_dirty()
             self.setText(self._term_em.get_text())
+        x, y = self._term_em.get_cursor()
+        curs = self.textCursor()
+        curs.setPosition(x + (self._width + 1) * y)
+        self.setTextCursor(curs)

@@ -92,7 +92,7 @@ class Connection:
             buffer += self._chan.recv(1024)
         return buffer
 
-    def resize_term(self, cols=80, rows=24):
+    def resize_term(self, rows=24, cols=80):
         """resizes the terminal"""
         try:
             self._chan.resize_pty(width=cols, height=rows)
