@@ -88,4 +88,3 @@ class Terminal(QTextEdit):
         curs = self.textCursor()
         curs.setPosition(x + (self._width + 1) * y)
         self.setTextCursor(curs)
-    
