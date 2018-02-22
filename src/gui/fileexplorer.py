@@ -3,7 +3,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QAbstractTableModel, Qt, QVariant, QAbstractItemModel
 
 
-class RemoteFileSystem(QAbstractItemModel):
+class RemoteFileSystem(QAbstractTableModel):
     def __init__(self, conn, root_path):
         super(RemoteFileSystem, self).__init__()
         self._conn = conn
@@ -22,9 +22,6 @@ class RemoteFileSystem(QAbstractItemModel):
         if role == Qt.DisplayRole:
             return self._files[file_ind].split('/')[-1]
         return QVariant()
-
-    def index(self, row, col, parent=None, *args, **kwargs):
-        return self._files[row].split('/')[-1]
 
     def headerData(self, section, orientation, role=None):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
