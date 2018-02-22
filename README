@@ -1,7 +1,7 @@
 File Structure
 --------------
 * main.py - Starts program
-* app.py - Main Kivy App
+* app.py - Main App
 * connection.py - Interface to SSH and SFTP server
 * term_em.py - Terminal emulator interface
 * gui/
@@ -15,8 +15,6 @@ File Structure
 
 Project Setup Guide
 -------------------
-First, install Kivy requisites for your system: https://kivy.org/docs/installation/installation.html
-
 To create your virtual environment, from project directory:
     pipenv install
 
