@@ -3,7 +3,7 @@ import pathlib
 import os.path
 
 _key_dir = os.path.join(os.path.expanduser('~'), '.ssh')
-pathlib.Path(_key_dir).mkdir(parents=True, exist_ok=True) # make ~/.ssh folder if necessary
+pathlib.Path(_key_dir).mkdir(parents=True, exist_ok=True)  # make ~/.ssh folder if necessary
 _priv_key_path = os.path.join(_key_dir, 'seaside_rsa')
 _pub_key_path = os.path.join(_key_dir, 'seaside_rsa.pub')
 
@@ -15,7 +15,7 @@ def _ensure_key_exists():
             return pub_key_file.read()
     # Create key-pair for SEASide
     key = paramiko.RSAKey.generate(bits=1024, progress_func=lambda arg: ...)
-    key.write_private_key_file(_priv_key_path) # No password protection - may want to add later
+    key.write_private_key_file(_priv_key_path)  # No password protection - may want to add later
     pub_key_text = '{} {} SEASide\n'.format(key.get_name(), key.get_base64())
     with open(_pub_key_path, 'w') as pub_key_file:
         pub_key_file.write(pub_key_text)

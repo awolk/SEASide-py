@@ -1,5 +1,6 @@
 import pyte
 
+
 class TerminalEmulator:
     def __init__(self, connection):
         self._connection = connection

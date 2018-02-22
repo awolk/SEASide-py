@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtCore import Qt, QTimer, pyqtSlot, QPoint
-from PyQt5.QtGui import QFontDatabase, QTextCursor
+from PyQt5.QtCore import Qt, QTimer, pyqtSlot
+from PyQt5.QtGui import QFontDatabase
 from pyte import control as ctrl, escape as esc
 from term_em import TerminalEmulator
 
@@ -88,3 +88,4 @@ class Terminal(QTextEdit):
         curs = self.textCursor()
         curs.setPosition(x + (self._width + 1) * y)
         self.setTextCursor(curs)
+    
