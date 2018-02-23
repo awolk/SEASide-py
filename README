@@ -3,6 +3,8 @@ File Structure
 * main.py - Starts program
 * app.py - Main App
 * connection.py - Interface to SSH and SFTP server
+* server_config.py: SEASnet server information
+* savedata.py: Interface to access configuration files
 * term_em.py - Terminal emulator interface
 * gui/
     * main_window.py - Master window

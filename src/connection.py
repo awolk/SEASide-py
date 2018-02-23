@@ -105,5 +105,10 @@ class Connection:
         files = self._sftp.listdir_attr(path)
         return [(file.filename, stat.S_ISDIR(file.st_mode), file.st_size) for file in files]
 
+    def file_to_remote(self, local_filename, remote_dir, callback=None):
+        name = os.path.basename(local_filename)
+        remote_path = remote_dir + '/' + name
+        self._sftp.put(local_filename, remote_path, callback, confirm=True)
+
     def get_home_dir(self):
         return self._home_dir
