@@ -100,25 +100,10 @@ class Connection:
         except paramiko.SSHException as e:
             print(e)
 
-    def get_size(self, filename):
-        stat = self._sftp.stat(filename)
-        size = stat.st_size
-        return size
-
-    def list_dir(self, path):
-        return self._sftp.listdir(path)
-
     def list_dir_stats(self, path):
-        # Returns an an array of (filename, is_dir)
+        # Returns an an array of (filename, is_dir, size)
         files = self._sftp.listdir_attr(path)
-        return [(file.filename, stat.S_ISDIR(file.st_mode)) for file in files]
-
-    def is_dir(self, path):
-        try:
-            stats = self._sftp.stat(path)
-            return stat.S_ISDIR(stats.st_mode)
-        except (IOError, paramiko.sftp.SFTPError):
-            return False
+        return [(file.filename, stat.S_ISDIR(file.st_mode), file.st_size) for file in files]
 
     def get_home_dir(self):
         return self._home_dir
