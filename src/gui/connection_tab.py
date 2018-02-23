@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QSplitter
+from PyQt5.QtCore import Qt
 from gui.fileexplorer import FileExplorer
 from gui.terminal import Terminal
 
@@ -18,8 +19,11 @@ class ConnectionTab(QWidget):
         policy.setHorizontalStretch(75)
         self._term.setSizePolicy(policy)
 
-        self._layout.addWidget(self._file_explorer)
-        self._layout.addWidget(self._term)
+        divider = QSplitter(Qt.Horizontal)
+        divider.addWidget(self._file_explorer)
+        divider.addWidget(self._term)
+
+        self._layout.addWidget(divider)
         self.setLayout(self._layout)
 
     def start(self):
