@@ -3,29 +3,29 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QAbstractTableModel, Qt, QVariant, QAbstractItemModel
 
 
-class RemoteFileSystem(QAbstractTableModel):
+class RemoteFileSystem(QStandardItemModel):
     def __init__(self, conn, root_path):
         super(RemoteFileSystem, self).__init__()
         self._conn = conn
         self._root_path = root_path
-        self._files = list(filter(lambda file: not file.split('/')[-1].startswith('.'),
-                                  self._conn.list_dir(self._root_path)))
+        parent = self.invisibleRootItem()
+        self._populate(root_path, parent)
 
-    def rowCount(self, parent=None, *args, **kwargs):
-        return len(self._files)
+    def _populate(self, path, item):
+        print('Populating', path)
+        if self._conn.is_dir(path):
+            for child in self._conn.list_dir(path):
+                if not child.startswith('.'):
+                    child_item = QStandardItem(child)
+                    self._populate(path + '/' + child, child_item)
+                    item.appendRow(child_item)
 
     def columnCount(self, parent=None, *args, **kwargs):
         return 1
 
-    def data(self, index, role=None):
-        file_ind = index.row()
-        if role == Qt.DisplayRole:
-            return self._files[file_ind].split('/')[-1]
-        return QVariant()
-
     def headerData(self, section, orientation, role=None):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
-                return ['Name', 'Size'][section]
+                return ['Name'][section]
         return QVariant()
 
 

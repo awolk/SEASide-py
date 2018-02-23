@@ -105,8 +105,7 @@ class Connection:
         return size
 
     def list_dir(self, path):
-        prefix = path + '/' if path != '/' else path
-        return [prefix + filename for filename in self._sftp.listdir(path)]
+        return self._sftp.listdir(path)
 
     def is_dir(self, path):
         try:
