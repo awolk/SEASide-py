@@ -1,6 +1,7 @@
 import paramiko
 import pathlib
 import os.path
+import stat
 
 _key_dir = os.path.join(os.path.expanduser('~'), '.ssh')
 pathlib.Path(_key_dir).mkdir(parents=True, exist_ok=True)  # make ~/.ssh folder if necessary
@@ -100,22 +101,24 @@ class Connection:
             print(e)
 
     def get_size(self, filename):
-        stat = self._sftp.lstat(filename)
+        stat = self._sftp.stat(filename)
         size = stat.st_size
         return size
 
     def list_dir(self, path):
         return self._sftp.listdir(path)
 
+    def list_dir_stats(self, path):
+        # Returns an an array of (filename, is_dir)
+        files = self._sftp.listdir_attr(path)
+        return [(file.filename, stat.S_ISDIR(file.st_mode)) for file in files]
+
     def is_dir(self, path):
         try:
-            self._sftp.chdir(path)
+            stats = self._sftp.stat(path)
+            return stat.S_ISDIR(stats.st_mode)
         except (IOError, paramiko.sftp.SFTPError):
             return False
-        else:
-            return True
-        finally:
-            self._sftp.chdir("/")
 
     def get_home_dir(self):
         return self._home_dir

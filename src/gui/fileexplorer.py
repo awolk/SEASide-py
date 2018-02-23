@@ -13,12 +13,12 @@ class RemoteFileSystem(QStandardItemModel):
 
     def _populate(self, path, item):
         print('Populating', path)
-        if self._conn.is_dir(path):
-            for child in self._conn.list_dir(path):
-                if not child.startswith('.'):
-                    child_item = QStandardItem(child)
-                    self._populate(path + '/' + child, child_item)
-                    item.appendRow(child_item)
+        for child_filename, child_is_dir in self._conn.list_dir_stats(path):
+            if not child_filename.startswith('.'):
+                child_item = QStandardItem(child_filename)
+                if child_is_dir:
+                    self._populate(path + '/' + child_filename, child_item)
+                item.appendRow(child_item)
 
     def columnCount(self, parent=None, *args, **kwargs):
         return 1
