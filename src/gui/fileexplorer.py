@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection
+from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -44,6 +44,9 @@ class RemoteFileSystemNode(QStandardItem):
                     self.appendRow([child_item, size_item])
             self._populated = True
 
+    def is_populated(self):
+        return self._populated
+
     def reload(self):
         self._populated = False
         while self.rowCount() > 0:
@@ -56,23 +59,10 @@ class RemoteFileSystem(QStandardItemModel):
 
     def __init__(self, conn, root_path):
         super(RemoteFileSystem, self).__init__()
-        self._conn = conn
-        self._root_path = root_path
-        self.populate()
-
-    def populate(self):
-        item = self.invisibleRootItem()
-        # TODO: Make a new method that only removes affected rows and updates them
-        while self.rowCount() > 0:  # remove all rows
-            self.takeRow(0)
-        for child_filename, child_is_dir, child_size in self._conn.list_dir_stats(self._root_path):
-            if not child_filename.startswith('.'):
-                child_item = RemoteFileSystemNode(child_filename,
-                                                  self._conn,
-                                                  self._root_path + '/' + child_filename,
-                                                  child_is_dir)
-                size_item = QStandardItem(sizeof_fmt(child_size) if not child_is_dir else '...')
-                item.appendRow([child_item, size_item])
+        self.root = RemoteFileSystemNode(root_path, conn, root_path, True)
+        self.root.populate()
+        self.appendRow(self.root)
+        self.index = self.root.index()
 
     def hasChildren(self, parent=None, *args, **kwargs):
         if self.data(parent, RemoteFileSystem.ExpandableRole):
@@ -115,25 +105,22 @@ class FileExplorer(QTreeView):
     def dropEvent(self, evt):
         if evt.mimeData().hasUrls():  # Accept local files
             evt.accept()
-            index = self.indexAt(evt.pos())
-            item = self.model().itemFromIndex(index)
-            path = self._root_dir
+            index: QModelIndex = self.indexAt(evt.pos())
+            if index.isValid():
+                item = self.model().itemFromIndex(index)
+            else:
+                item = self.model().root
 
-            if isinstance(item, RemoteFileSystemNode):
-                path = item.path()
-                if not item.is_dir():
-                    path = path[:path.rindex('/')]  # extra directory name of file
+            path = item.path()
+            if not item.is_dir():
+                path = path[:path.rindex('/')]  # extra directory name of file
 
             for url in evt.mimeData().urls():
                 local_filename = url.toLocalFile()
-                # copy local_filename -> remote path
 
                 def callback(bytes_so_far, total_bytes):
                     if bytes_so_far == total_bytes:
-                        if isinstance(item, RemoteFileSystemNode):  # dragged into subdirectory
-                            item.reload()
-                        else:
-                            self._model.populate()
+                        item.reload()
 
                 self._conn.file_to_remote(local_filename, path, callback)
 
@@ -142,6 +129,7 @@ class FileExplorer(QTreeView):
         self._conn = self._parent.get_connection()
         self._model = RemoteFileSystem(self._conn, root_path)
         self.setModel(self._model)
+        self.setRootIndex(self._model.index)
 
     def _update(self, index):
         parent = self.model().itemFromIndex(index)
