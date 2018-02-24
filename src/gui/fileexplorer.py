@@ -23,6 +23,7 @@ class RemoteFileSystemNode(QStandardItem):
         self._path = path
         self._is_dir = is_dir
         self._populated = not is_dir
+        self._show_hidden_files = False
         if is_dir:
             self.setData(True, RemoteFileSystem.ExpandableRole)
 
@@ -34,24 +35,33 @@ class RemoteFileSystemNode(QStandardItem):
 
     def populate(self):
         if self._is_dir and not self._populated:
-            for child_filename, child_is_dir, child_size in self._conn.list_dir_stats(self._path):
-                if not child_filename.startswith('.'):
-                    child_item = RemoteFileSystemNode(child_filename,
-                                                      self._conn,
-                                                      self._path + '/' + child_filename,
-                                                      child_is_dir)
-                    size_item = QStandardItem(sizeof_fmt(child_size) if not child_is_dir else '...')
-                    self.appendRow([child_item, size_item])
+            self.reload()
             self._populated = True
 
     def is_populated(self):
         return self._populated
 
     def reload(self):
-        self._populated = False
-        while self.rowCount() > 0:
-            self.takeRow(0)
-        self.populate()
+        if not self._is_dir:
+            return
+        children = [self.child(i) for i in range(self.rowCount())]
+        path_to_child = {child.path(): child for child in children}
+        # check current state of directory
+        for child_filename, child_is_dir, child_size in self._conn.list_dir_stats(self._path):
+            if child_filename.startswith('.') and not self._show_hidden_files:
+                continue
+            # check if child is already created
+            path = self._path + '/' + child_filename
+            if path in path_to_child:
+                path_to_child[path].reload()
+                del path_to_child[path]
+            else:  # child not created
+                new_child = RemoteFileSystemNode(child_filename,
+                                                 self._conn,
+                                                 self._path + '/' + child_filename,
+                                                 child_is_dir)
+                size_item = QStandardItem(sizeof_fmt(child_size) if not child_is_dir else '...')
+                self.appendRow([new_child, size_item])
 
 
 class RemoteFileSystem(QStandardItemModel):
@@ -108,12 +118,14 @@ class FileExplorer(QTreeView):
             index: QModelIndex = self.indexAt(evt.pos())
             if index.isValid():
                 item = self.model().itemFromIndex(index)
+                if not item.is_dir():
+                    item = item.parent()
             else:
                 item = self.model().root
 
             path = item.path()
-            if not item.is_dir():
-                path = path[:path.rindex('/')]  # extra directory name of file
+            # if not item.is_dir():
+            #     path = path[:path.rindex('/')]  # extra directory name of file
 
             for url in evt.mimeData().urls():
                 local_filename = url.toLocalFile()
