@@ -41,7 +41,7 @@ class RemoteFileSystemNode(QStandardItem):
     def is_populated(self):
         return self._populated
 
-    def reload(self):
+    def reload(self, recursive=True):
         if not self._is_dir:
             return
         children = [self.child(i) for i in range(self.rowCount())]
@@ -53,7 +53,8 @@ class RemoteFileSystemNode(QStandardItem):
             # check if child is already created
             path = self._path + '/' + child_filename
             if path in path_to_child:
-                path_to_child[path].reload()
+                if recursive:
+                    path_to_child[path].reload()  # reload child if this reload is recursive
                 del path_to_child[path]
             else:  # child not created
                 new_child = RemoteFileSystemNode(child_filename,
@@ -137,7 +138,7 @@ class FileTreeView(QTreeView):
 
                 def callback(bytes_so_far, total_bytes):
                     if bytes_so_far == total_bytes:
-                        item.reload()
+                        item.reload(recursive=False)
 
                 self._conn.file_to_remote(local_filename, path, callback)
 
