@@ -5,13 +5,9 @@ import PyQt5
 
 block_cipher = None
 
-pyqt_dir = os.path.dirname(getfile(PyQt5))
-pyqt_styles = os.path.join(pyqt_dir, 'Qt', 'plugins', 'styles')
-binary_files = [(os.path.join(pyqt_styles, lib), 'platforms') for lib in os.listdir(pyqt_styles)]
-
 a = Analysis(['src/main.py'],
-             pathex=['.', pyqt_dir, pyqt_styles],
-             binaries=binary_files,
+             pathex=['.'],
+             binaries=[],
              datas=[],
              hiddenimports=[],
              hookspath=[],
