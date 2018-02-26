@@ -62,6 +62,9 @@ class RemoteFileSystemNode(QStandardItem):
                                                  child_is_dir)
                 size_item = QStandardItem(sizeof_fmt(child_size) if not child_is_dir else '...')
                 self.appendRow([new_child, size_item])
+        # remove deleted files
+        for child in path_to_child.values():
+            self.takeRow(child.row())
 
 
 class RemoteFileSystem(QStandardItemModel):
@@ -124,8 +127,6 @@ class FileExplorer(QTreeView):
                 item = self.model().root
 
             path = item.path()
-            # if not item.is_dir():
-            #     path = path[:path.rindex('/')]  # extra directory name of file
 
             for url in evt.mimeData().urls():
                 local_filename = url.toLocalFile()
