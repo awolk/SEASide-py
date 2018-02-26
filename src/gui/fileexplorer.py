@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QTreeView, QAbstractItemView
+from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex
+from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -91,9 +91,9 @@ class RemoteFileSystem(QStandardItemModel):
         return QVariant()
 
 
-class FileExplorer(QTreeView):
+class FileTreeView(QTreeView):
     def __init__(self, parent):
-        super(FileExplorer, self).__init__()
+        super(FileTreeView, self).__init__()
         self._root_dir = '/'
         self._parent = parent
         self.expanded.connect(self._update)
@@ -103,6 +103,10 @@ class FileExplorer(QTreeView):
         self.setDropIndicatorShown(True)
         self._conn = None
         self._model = None
+
+    def reload(self):
+        if self._model:
+            self._model.root.reload()
 
     def dragEnterEvent(self, evt):
         if evt.mimeData().hasUrls():  # Accept local files
@@ -137,7 +141,7 @@ class FileExplorer(QTreeView):
 
                 self._conn.file_to_remote(local_filename, path, callback)
 
-    def start(self, root_path='/'):
+    def start(self, root_path):
         self._root_dir = root_path
         self._conn = self._parent.get_connection()
         self._model = RemoteFileSystem(self._conn, root_path)
@@ -147,3 +151,22 @@ class FileExplorer(QTreeView):
     def _update(self, index):
         parent = self.model().itemFromIndex(index)
         parent.populate()
+
+
+class FileExplorer(QWidget):
+    def __init__(self, parent):
+        super(FileExplorer, self).__init__()
+        button = QPushButton('Refresh')
+        button.pressed.connect(self._btn_press)
+        self._tree = FileTreeView(parent)
+        layout = QVBoxLayout()
+        layout.addWidget(button)
+        layout.addWidget(self._tree)
+        self.setLayout(layout)
+
+    @pyqtSlot()
+    def _btn_press(self):
+        self._tree.reload()
+
+    def start(self, root_path='/'):
+        self._tree.start(root_path)
