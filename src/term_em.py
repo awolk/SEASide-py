@@ -29,14 +29,19 @@ class TerminalEmulator:
     def get_cursor(self):
         return self._screen.cursor.x, self._screen.cursor.y
 
-    def is_dirty(self):
-        return bool(self._screen.dirty)
+    def dirty_lines(self):
+        return self._screen.dirty
 
     def clear_dirty(self):
         self._screen.dirty.clear()
 
     def get_text(self):
         return '\n'.join(self._screen.display)
+
+    def get_line(self, n):
+        if n < len(self._screen.display):
+            return self._screen.display[n]
+        return ''
 
     def _cursor_ecape_char(self):
         DECCKM = 1 << 5

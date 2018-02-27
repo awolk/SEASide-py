@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QTextEdit
+from PyQt5.QtWidgets import QTextEdit, QApplication
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
-from PyQt5.QtGui import QFontDatabase
+from PyQt5.QtGui import QFontDatabase, QTextCursor
 from pyte import control as ctrl, escape as esc
 from term_em import TerminalEmulator
 
@@ -8,6 +8,7 @@ from term_em import TerminalEmulator
 class Terminal(QTextEdit):
     def __init__(self, parent):
         super(Terminal, self).__init__()
+        QApplication.instance().setCursorFlashTime(0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
@@ -29,6 +30,7 @@ class Terminal(QTextEdit):
         self._height = int(height / self._text_height)
         self._width = int(width / self._text_width)
         self._term_em.resize(self._height, self._width)
+        self.setText(self._term_em.get_text())
 
     def resizeEvent(self, evt):
         size = evt.size()
@@ -82,10 +84,21 @@ class Terminal(QTextEdit):
     @pyqtSlot()
     def _check_input(self):
         self._term_em.receive()
-        if self._term_em.is_dirty():
+        line_nums = self._term_em.dirty_lines()
+        if line_nums:
+            for line_num in line_nums:
+                line = self._term_em.get_line(line_num)
+                # replace line
+                cursor: QTextCursor = self.textCursor()
+                cursor.movePosition(QTextCursor.Start)
+                cursor.movePosition(QTextCursor.Down, QTextCursor.MoveAnchor, line_num)
+                cursor.select(QTextCursor.LineUnderCursor)
+                cursor.insertText(line)
+                self.setTextCursor(cursor)
             self._term_em.clear_dirty()
-            self.setText(self._term_em.get_text())
         x, y = self._term_em.get_cursor()
-        curs = self.textCursor()
-        curs.setPosition(x + (self._width + 1) * y)
-        self.setTextCursor(curs)
+        curs: QTextCursor = self.textCursor()
+        new_position = x + (self._width + 1) * y
+        if curs.position() != new_position:
+            curs.setPosition(new_position)
+            self.setTextCursor(curs)
