@@ -49,17 +49,18 @@ class Terminal(QTextEdit):
         text = evt.text()
 
         w = self._term_em.write
-        cursor_escape = 'O' if 32 in self._term_em._screen.mode else '['
         if key == Qt.Key_Backspace:
             return w(ctrl.BS)
         elif key == Qt.Key_Up:
-            return w(ctrl.ESC + cursor_escape + esc.CUU)
+            self._term_em.key_up()
         elif key == Qt.Key_Down:
-            return w(ctrl.ESC + cursor_escape + esc.CUD)
+            self._term_em.key_down()
         elif key == Qt.Key_Left:
-            return w(ctrl.ESC + cursor_escape + esc.CUB)
+            self._term_em.key_left()
         elif key == Qt.Key_Right:
-            return w(ctrl.ESC + cursor_escape + esc.CUF)
+            self._term_em.key_right()
+        elif key == Qt.Key_Escape:
+            return w(ctrl.ESC)
         elif meta:
             if text == ' ':
                 return w(b'\000')

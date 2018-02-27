@@ -1,15 +1,21 @@
 import pyte
+from pyte import control as ctrl, escape as esc
+from PyQt5.Qt import QApplication
 
 
 class TerminalEmulator:
     def __init__(self, connection):
         self._connection = connection
         self._screen = pyte.Screen(80, 24)
+        self._screen.bell = self._beep
         self._stream = pyte.ByteStream(self._screen)
 
     def write(self, in_bytes):
         """Write bytes from client to server"""
         self._connection.send_ssh_bytes(in_bytes)
+
+    def _beep(self, *args):
+        QApplication.instance().beep()
 
     def receive(self):
         """Receive bytes from server"""
@@ -31,3 +37,23 @@ class TerminalEmulator:
 
     def get_text(self):
         return '\n'.join(self._screen.display)
+
+    def _cursor_ecape_char(self):
+        DECCKM = 1 << 5
+        return 'O' if DECCKM in self._screen.mode else '['
+
+    def key_up(self):
+        cursor_escape = self._cursor_ecape_char()
+        self.write(ctrl.ESC + cursor_escape + esc.CUU)
+
+    def key_down(self):
+        cursor_escape = self._cursor_ecape_char()
+        self.write(ctrl.ESC + cursor_escape + esc.CUD)
+
+    def key_left(self):
+        cursor_escape = self._cursor_ecape_char()
+        self.write(ctrl.ESC + cursor_escape + esc.CUB)
+
+    def key_right(self):
+        cursor_escape = self._cursor_ecape_char()
+        self.write(ctrl.ESC + cursor_escape + esc.CUF)
