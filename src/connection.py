@@ -110,5 +110,8 @@ class Connection:
         remote_path = remote_dir + '/' + name
         self._sftp.put(local_filename, remote_path, callback, confirm=True)
 
+    def file_from_remote(self, remote_filename, local_filename, callback=None):
+        self._sftp.get(remote_filename, local_filename, callback)
+
     def get_home_dir(self):
         return self._home_dir
