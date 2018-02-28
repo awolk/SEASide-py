@@ -43,6 +43,11 @@ class TerminalEmulator:
             return self._screen.display[n]
         return ''
 
+    def get_line_styles(self, n):
+        # returns an array of Chars
+        line = self._screen.buffer[n]
+        return [line[x] for x in range(self._screen.columns)]
+
     def _cursor_ecape_char(self):
         DECCKM = 1 << 5
         return 'O' if DECCKM in self._screen.mode else '['

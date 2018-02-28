@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTextEdit, QApplication
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
-from PyQt5.QtGui import QFontDatabase, QTextCursor
+from PyQt5.QtGui import QFontDatabase, QTextCursor, QTextFormat, QTextCharFormat, QFont
 from pyte import control as ctrl, escape as esc
 from term_em import TerminalEmulator
 
