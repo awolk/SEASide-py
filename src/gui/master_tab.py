@@ -17,7 +17,8 @@ class MasterTab(QWidget):
         self._layout = QVBoxLayout()
         self._layout.addWidget(self._loader, Qt.AlignCenter)
         self.setLayout(self._layout)
-        QTimer.singleShot(0, lambda: self._loader.connect(config.get_username()))
+        # TODO: This should be a separate thread
+        self._loader.connect(config.get_username())
 
     def get_connection(self):
         return self._connection

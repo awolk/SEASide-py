@@ -1,10 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QStyleFactory
+from PyQt5.QtWidgets import QApplication
 from gui.main_window import MainWindow
-
-_styles = QStyleFactory.keys()
-print('Styles:', ', '.join(_styles))
-
 
 class SEASideApp:
     def __init__(self):

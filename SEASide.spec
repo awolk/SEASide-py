@@ -1,7 +1,4 @@
 # -*- mode: python -*-
-import os
-from inspect import getfile
-import PyQt5
 
 block_cipher = None
 
