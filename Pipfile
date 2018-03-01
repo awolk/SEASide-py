@@ -12,6 +12,7 @@ paramiko = "*"
 appdirs = "*"
 "pyqt5" = "*"
 "69f01b1" = {file = "https://github.com/bjones1/pyinstaller/archive/pyqt5_fix.zip"}
+xlib = "*"
 
 
 [dev-packages]
