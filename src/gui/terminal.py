@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTextEdit, QApplication
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
-from PyQt5.QtGui import QFontDatabase, QTextCursor, QTextFormat, QTextCharFormat, QFont
+from PyQt5.QtGui import QFontDatabase, QTextCursor, QTextFormat, QTextCharFormat, QFont, QBrush, QColor
 from pyte import control as ctrl, escape as esc
 from term_em import TerminalEmulator
 
@@ -8,16 +8,20 @@ from term_em import TerminalEmulator
 class Terminal(QTextEdit):
     def __init__(self, parent):
         super(Terminal, self).__init__()
+
         QApplication.instance().setCursorFlashTime(0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
+        # self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
+        self.setFont(QFont('Menlo'))
         self.setFontPointSize(12)
+        self._default_text_format = self.currentCharFormat()
+
         self._text_width = self.fontMetrics().maxWidth() + 1.5  # This could be cleaner
         self._text_height = self.fontMetrics().lineSpacing() + 2.3  # This could be cleaner too
-        # self.setStyleSheet('background-color: black; color: white')
+
         self._parent = parent
-        self._term_em = None
+        self._term_em: TerminalEmulator = None
 
     def start(self):
         self._term_em = TerminalEmulator(self._parent.get_connection())
@@ -88,12 +92,33 @@ class Terminal(QTextEdit):
         if line_nums:
             for line_num in line_nums:
                 line = self._term_em.get_line(line_num)
+                line_extra = self._term_em.get_line_styles(line_num)
                 # replace line
                 cursor: QTextCursor = self.textCursor()
                 cursor.movePosition(QTextCursor.Start)
                 cursor.movePosition(QTextCursor.Down, QTextCursor.MoveAnchor, line_num)
                 cursor.select(QTextCursor.LineUnderCursor)
-                cursor.insertText(line)
+                # cursor.insertText(line)
+                for char in line_extra:
+                    text_format: QTextCharFormat = QTextCharFormat()
+                    text_format.merge(self._default_text_format)
+                    # data, fg, bg, bold, italics, underscore, strikethrough, reverse
+                    if char.fg != 'default':
+                        text_format.setForeground(QColor(char.fg))
+                    if char.bg != 'default':
+                        text_format.setBackground(QColor(char.bg))
+                    if char.bold:
+                        text_format.setFontWeight(QFont.Bold)
+                    if char.italics:
+                        text_format.setFontItalic(True)
+                    if char.underscore:
+                        text_format.setFontUnderline(True)
+                    if char.strikethrough:
+                        text_format.setFontStrikeOut(True)
+                    if char.reverse:
+                        ...
+                    cursor.setCharFormat(text_format)
+                    cursor.insertText(char.data)
                 self.setTextCursor(cursor)
             self._term_em.clear_dirty()
         x, y = self._term_em.get_cursor()
