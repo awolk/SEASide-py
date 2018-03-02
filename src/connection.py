@@ -1,7 +1,9 @@
 import paramiko
 import pathlib
-import os.path
+import os
 import stat
+import Xlib.support.connect as xlib_connect
+import threading
 
 _key_dir = os.path.join(os.path.expanduser('~'), '.ssh')
 pathlib.Path(_key_dir).mkdir(parents=True, exist_ok=True)  # make ~/.ssh folder if necessary
@@ -23,6 +25,20 @@ def _ensure_key_exists():
     return pub_key_text
 
 
+class X11Handler(threading.Thread):
+    def __init__(self, transport):
+        super(X11Handler, self).__init__()
+        self._transport = transport
+
+    def run(self):
+        x11_channel = self._transport.accept()
+        dname, protocol, host, dno, screen = xlib_connect.get_display(os.environ['DISPLAY'])
+        protocol = protocol or None
+        local_x11_socket = xlib_connect.get_socket(dname, protocol, host, dno)
+        self.chan_fileno = x11_channel.fileno()
+        self.socket_fileno = local_x11_socket.fileno()
+
+
 class Connection:
     def __init__(self, server):
         self._server = server
@@ -34,13 +50,16 @@ class Connection:
         self._home_dir = None
 
     def _build_connection(self):
-        try:
-            self._chan = self._client.invoke_shell()
-            self._sftp = self._client.open_sftp()
-            self._sftp.chdir('.')
-            self._home_dir = self._sftp.getcwd()
-        except paramiko.ssh_exception.SSHException as e:
-            print(e)
+        transport: paramiko.Transport = self._client.get_transport()
+        self._client.invoke_shell()
+        self._chan = transport.open_session()
+        self._chan.request_x11(single_connection=True)
+        self._chan.get_pty('vt100', 80, 24, 0, 0)
+        self._chan.invoke_shell()
+        #X11Handler(transport).start()
+        self._sftp = self._client.open_sftp()
+        self._sftp.chdir('.')
+        self._home_dir = self._sftp.getcwd()
 
     def _save_keys(self):
         pub_key_text = _ensure_key_exists()
