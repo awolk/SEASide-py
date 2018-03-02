@@ -134,3 +134,6 @@ class Connection:
 
     def get_home_dir(self):
         return self._home_dir
+
+    def close_connection(self):
+        self._client.close()
