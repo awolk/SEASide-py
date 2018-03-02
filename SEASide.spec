@@ -17,7 +17,7 @@ a = Analysis(['src/main.py'],
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
-console = platform.system() != 'Darwin'  # console should only be false on Mac
+console = platform.system() == 'Darwin'  # console should only be True on Mac
 
 exe = EXE(pyz,
           a.scripts,

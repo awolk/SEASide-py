@@ -51,6 +51,9 @@ class Terminal(QTextEdit):
         text = evt.text()
 
         w = self._term_em.write
+        if control and key == Qt.Key_V:
+            clip_text = QApplication.clipboard().text()
+            w(clip_text)
         if key == Qt.Key_Backspace:
             return w(ctrl.BS)
         elif key == Qt.Key_Up:
