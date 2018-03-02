@@ -52,8 +52,12 @@ class Terminal(QTextEdit):
 
         w = self._term_em.write
         if control and key == Qt.Key_V:
+            # Paste
             clip_text = QApplication.clipboard().text()
             w(clip_text)
+        if control and key == Qt.Key_C:
+            # Copy
+            super(Terminal, self).keyPressEvent(evt)
         if key == Qt.Key_Backspace:
             return w(ctrl.BS)
         elif key == Qt.Key_Up:
@@ -102,6 +106,7 @@ class Terminal(QTextEdit):
         x, y = self._term_em.get_cursor()
         curs: QTextCursor = self.textCursor()
         new_position = x + (self._width + 1) * y
-        if curs.position() != new_position:
-            curs.setPosition(new_position)
-            self.setTextCursor(curs)
+        if not curs.hasSelection() and QApplication.mouseButtons() == Qt.NoButton:
+            if curs.position() != new_position:
+                curs.setPosition(new_position)
+                self.setTextCursor(curs)
