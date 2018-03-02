@@ -62,3 +62,6 @@ class TerminalEmulator:
     def key_right(self):
         cursor_escape = self._cursor_ecape_char()
         self.write(ctrl.ESC + cursor_escape + esc.CUF)
+
+    def open_connection(self):
+        return self._connection.has_open_connection

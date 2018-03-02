@@ -92,7 +92,7 @@ class Terminal(QTextEdit):
     def _check_input(self):
         self._term_em.receive()
         line_nums = self._term_em.dirty_lines()
-        if line_nums:
+        if line_nums and self._term_em.open_connection:
             for line_num in line_nums:
                 line = self._term_em.get_line(line_num)
                 # replace line

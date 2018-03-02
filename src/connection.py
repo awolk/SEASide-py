@@ -48,6 +48,7 @@ class Connection:
         self._chan = None
         self._sftp = None
         self._home_dir = None
+        self._is_open = False
 
     def _build_connection(self):
         transport: paramiko.Transport = self._client.get_transport()
@@ -79,6 +80,7 @@ class Connection:
             return False
         else:
             self._build_connection()
+            self._is_open = True
             return True
 
     def attempt_login(self, username, password):
@@ -97,7 +99,7 @@ class Connection:
             try:
                 self._chan.send(bytes)
             except OSError:
-                pass  # TODO: Implement closing connections
+                self.close_connection()
         else:
             print("Shell not opened")
 
@@ -137,3 +139,8 @@ class Connection:
 
     def close_connection(self):
         self._client.close()
+        self._is_open = False
+
+    def has_open_connection(self):
+        return self._is_open
+

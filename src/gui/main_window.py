@@ -49,13 +49,13 @@ class MainWindow(QMainWindow):
         server_name = str(self._dropdown.currentText())
         server = SERVERS[server_name]
         self._config.set_default_server(server_name)
-        self.tab = MasterTab(server, self._config)
-        self._tab_view.addTab(self.tab, server_name)
+        self._tab = MasterTab(server, self._config)
+        self._tab_view.addTab(self._tab, server_name)
         self._tab_view.setCurrentIndex(self._tab_view.count() - 1)
 
     @pyqtSlot(int)
     def _close_tab(self, index):
-        self.tab.get_connection().close_connection()
+        self._tab.get_connection().close_connection()
         self._tab_view.removeTab(index)
 
     def get_username(self):
