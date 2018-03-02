@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout
+from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout, QMenu, QAction, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot
+from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -19,6 +19,7 @@ def sizeof_fmt(num, suffix='B'):
 class RemoteFileSystemNode(QStandardItem):
     def __init__(self, name, conn, path, is_dir):
         super(RemoteFileSystemNode, self).__init__(name)
+        self._name = name
         self._conn = conn
         self._path = path
         self._is_dir = is_dir
@@ -26,6 +27,9 @@ class RemoteFileSystemNode(QStandardItem):
         self._show_hidden_files = False
         if is_dir:
             self.setData(True, RemoteFileSystem.ExpandableRole)
+
+    def name(self):
+        return self._name
 
     def path(self):
         return self._path
@@ -88,7 +92,7 @@ class RemoteFileSystem(QStandardItemModel):
 
     def headerData(self, section, orientation, role=None):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
-                return ['Name', 'Size'][section]
+            return ['Name', 'Size'][section]
         return QVariant()
 
 
@@ -97,13 +101,18 @@ class FileTreeView(QTreeView):
         super(FileTreeView, self).__init__()
         self._root_dir = '/'
         self._parent = parent
+        self._conn = None
+        self._model = None
+        # Handle expanding folders
         self.expanded.connect(self._update)
+        # Handle dropping files into file explorer
         self.setDragDropMode(QAbstractItemView.DragDrop)
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
-        self._conn = None
-        self._model = None
+        # Handle right clicking nodes in file explorer
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._open_menu)
 
     def reload(self):
         if self._model:
@@ -152,6 +161,32 @@ class FileTreeView(QTreeView):
     def _update(self, index):
         parent = self.model().itemFromIndex(index)
         parent.populate()
+
+    @pyqtSlot(QPoint)
+    def _open_menu(self, position: QPoint):
+        indexes = self.selectedIndexes()
+        if len(indexes) != 2:
+            return
+        item = self._model.itemFromIndex(indexes[0])
+        if item.is_dir():
+            return
+        menu = QMenu()
+        download_action = QAction('Download {}'.format(item.name()))
+        download_action.setData({
+            'path': item.path(),
+            'name': item.name()
+        })
+        menu.addAction(download_action)
+        menu.triggered.connect(self._download_menu)
+        menu.exec_(self.viewport().mapToGlobal(position))
+
+    @pyqtSlot(QAction)
+    def _download_menu(self, action: QAction):
+        if action.text().startswith('Download '):
+            remote_path, name = action.data()['path'], action.data()['name']
+            local_path = QFileDialog.getSaveFileName(caption='Save File', directory=name)[0]
+            if local_path:
+                self._conn.file_from_remote(remote_path, local_path)
 
 
 class FileExplorer(QWidget):

@@ -2,7 +2,7 @@ import paramiko
 import pathlib
 import os
 import stat
-import Xlib.support.connect as xlib_connect
+# import Xlib.support.connect as xlib_connect
 import threading
 
 _key_dir = os.path.join(os.path.expanduser('~'), '.ssh')
@@ -53,10 +53,10 @@ class Connection:
         transport: paramiko.Transport = self._client.get_transport()
         self._client.invoke_shell()
         self._chan = transport.open_session()
-        self._chan.request_x11(single_connection=True)
+        # self._chan.request_x11(single_connection=True)
         self._chan.get_pty('vt100', 80, 24, 0, 0)
         self._chan.invoke_shell()
-        #X11Handler(transport).start()
+        # X11Handler(transport).start()
         self._sftp = self._client.open_sftp()
         self._sftp.chdir('.')
         self._home_dir = self._sftp.getcwd()
@@ -128,6 +128,9 @@ class Connection:
         name = os.path.basename(local_filename)
         remote_path = remote_dir + '/' + name
         self._sftp.put(local_filename, remote_path, callback, confirm=True)
+
+    def file_from_remote(self, remote_filename, local_filename, callback=None):
+        self._sftp.get(remote_filename, local_filename, callback)
 
     def get_home_dir(self):
         return self._home_dir
