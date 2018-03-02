@@ -95,13 +95,10 @@ class Connection:
             return True
 
     def send_ssh_bytes(self, bytes):
-        if self._chan and self._chan.send_ready():
-            try:
-                self._chan.send(bytes)
-            except OSError:
-                self.close_connection()
-        else:
-            print("Shell not opened")
+        try:
+            self._chan.send(bytes)
+        except OSError:
+            self.close_connection()
 
     def has_ssh_data(self):
         """returns True if there is buffered data returns False otherwise"""
