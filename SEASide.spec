@@ -1,4 +1,5 @@
 # -*- mode: python -*-
+import platform
 
 block_cipher = None
 
@@ -15,6 +16,9 @@ a = Analysis(['src/main.py'],
              cipher=block_cipher)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
+
+console = platform.system() != 'Darwin'  # console should only be false on Mac
+
 exe = EXE(pyz,
           a.scripts,
           a.binaries,
@@ -25,9 +29,8 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           runtime_tmpdir=None,
-          # console=True makes it perform as a normal app on Mac (no double-bounce)
           # TODO: Check on Windows/Linux
-          console=True, icon='icons/icon.ico')
+          console=console, icon='icons/icon.ico')
 app = BUNDLE(exe,
              name='SEASide.app',
              icon='icons/icon.icns',
