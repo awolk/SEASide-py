@@ -18,13 +18,13 @@ class Terminal(QTextEdit):
         # self.setStyleSheet('background-color: black; color: white')
         self._parent = parent
         self._term_em = None
+        self._timer = QTimer(self)
 
     def start(self):
         self._term_em = TerminalEmulator(self._parent.get_connection())
         self._resize(self.width(), self.height())
-        timer = QTimer(self)
-        timer.timeout.connect(self._check_input)
-        timer.start(0)  # TODO: Prevent input checking blocking: make changing text more efficient (using dirty fields)
+        self._timer.timeout.connect(self._check_input)
+        self._timer.start(0)  # TODO: Prevent input checking blocking: make changing text more efficient (using dirty fields)
 
     def _resize(self, width, height):
         self._height = int(height / self._text_height)
@@ -92,7 +92,7 @@ class Terminal(QTextEdit):
     def _check_input(self):
         self._term_em.receive()
         line_nums = self._term_em.dirty_lines()
-        if line_nums and self._term_em.open_connection:
+        if line_nums:
             for line_num in line_nums:
                 line = self._term_em.get_line(line_num)
                 # replace line
