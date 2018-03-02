@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout, QMenu, QAction, QFileDialog
+from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout, QMenu, QAction, \
+    QFileDialog, QHeaderView
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint
 
@@ -103,16 +104,6 @@ class FileTreeView(QTreeView):
         self._parent = parent
         self._conn = None
         self._model = None
-        # Handle expanding folders
-        self.expanded.connect(self._update)
-        # Handle dropping files into file explorer
-        self.setDragDropMode(QAbstractItemView.DragDrop)
-        self.setAcceptDrops(True)
-        self.setDragEnabled(True)
-        self.setDropIndicatorShown(True)
-        # Handle right clicking nodes in file explorer
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._open_menu)
 
     def reload(self):
         if self._model:
@@ -152,11 +143,28 @@ class FileTreeView(QTreeView):
                 self._conn.file_to_remote(local_filename, path, callback)
 
     def start(self, root_path):
+        # Build file structure
         self._root_dir = root_path
         self._conn = self._parent.get_connection()
         self._model = RemoteFileSystem(self._conn, root_path)
         self.setModel(self._model)
         self.setRootIndex(self._model.index)
+        # Handle expanding folders
+        self.expanded.connect(self._update)
+        # Handle dropping files into file explorer
+        self.setDragDropMode(QAbstractItemView.DragDrop)
+        self.setAcceptDrops(True)
+        self.setDragEnabled(True)
+        self.setDropIndicatorShown(True)
+        # Handle right clicking nodes in file explorer
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._open_menu)
+        # Handle column sizing
+        self.setColumnWidth(0, 150)
+        self.setColumnWidth(1, 90)
+        self.header().setStretchLastSection(False)
+        self.header().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.header().setSectionResizeMode(1, QHeaderView.ResizeToContents)
 
     def _update(self, index):
         parent = self.model().itemFromIndex(index)
