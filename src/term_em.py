@@ -6,7 +6,7 @@ from PyQt5.Qt import QApplication
 class TerminalEmulator:
     def __init__(self, connection):
         self._connection = connection
-        self._screen = pyte.Screen(80, 24)
+        self._screen = pyte.HistoryScreen(80, 24)
         self._screen.bell = self._beep
         self._stream = pyte.ByteStream(self._screen)
 
@@ -21,6 +21,7 @@ class TerminalEmulator:
         """Receive bytes from server"""
         if self._connection.has_ssh_data():
             self._stream.feed(self._connection.receive_ssh_data())
+        print(self._screen.title)
 
     def resize(self, rows=24, cols=80):
         self._connection.resize_term(rows, cols)

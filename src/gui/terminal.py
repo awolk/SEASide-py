@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTextEdit, QApplication
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
-from PyQt5.QtGui import QFontDatabase, QTextCursor
+from PyQt5.QtGui import QFontDatabase, QTextCursor, QWheelEvent
 from pyte import control as ctrl, escape as esc
 from term_em import TerminalEmulator
 
@@ -20,6 +20,7 @@ class Terminal(QTextEdit):
         self._conn = None
         self._term_em = None
         self._timer = QTimer(self)
+        self._angle_delta = 0
 
     def start(self):
         self._conn = self._parent.get_connection()
@@ -40,6 +41,16 @@ class Terminal(QTextEdit):
         height = size.height()
         self._resize(width, height)
         super(Terminal, self).resizeEvent(evt)
+
+    # def wheelEvent(self, evt: QWheelEvent):
+    #     angle_threshold = 50
+    #     self._angle_delta += evt.angleDelta().y()
+    #     while self._angle_delta >= angle_threshold:
+    #         self._term_em.key_up()
+    #         self._angle_delta -= angle_threshold
+    #     while self._angle_delta <= -angle_threshold:
+    #         self._term_em.key_down()
+    #         self._angle_delta += angle_threshold
 
     def keyPressEvent(self, evt):
         key = evt.key()
