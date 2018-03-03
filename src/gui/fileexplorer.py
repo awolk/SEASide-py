@@ -18,7 +18,7 @@ def sizeof_fmt(num, suffix='B'):
 # https://stackoverflow.com/questions/46778623/lazy-loading-child-items-qtreeview
 
 class RemoteFileSystemNode(QStandardItem):
-    def __init__(self, name, conn, path, is_dir):
+    def __init__(self, name, conn, path, is_dir, size):
         super(RemoteFileSystemNode, self).__init__(name)
         self._name = name
         self._conn = conn
@@ -26,6 +26,7 @@ class RemoteFileSystemNode(QStandardItem):
         self._is_dir = is_dir
         self._populated = not is_dir
         self._show_hidden_files = False
+        self.size_item = QStandardItem(sizeof_fmt(size) if not is_dir else '')
         if is_dir:
             self.setData(True, RemoteFileSystem.ExpandableRole)
 
@@ -60,6 +61,7 @@ class RemoteFileSystemNode(QStandardItem):
             if path in path_to_child:
                 if recursive:
                     child = path_to_child[path]
+                    child.size_item.setText(sizeof_fmt(child_size) if not child_is_dir else '')
                     if child.is_populated():
                         child.reload(recursive)  # reload child if this reload is recursive
                 del path_to_child[path]
@@ -67,9 +69,9 @@ class RemoteFileSystemNode(QStandardItem):
                 new_child = RemoteFileSystemNode(child_filename,
                                                  self._conn,
                                                  self._path + '/' + child_filename,
-                                                 child_is_dir)
-                size_item = QStandardItem(sizeof_fmt(child_size) if not child_is_dir else '...')
-                self.appendRow([new_child, size_item])
+                                                 child_is_dir,
+                                                 child_size)
+                self.appendRow([new_child, new_child.size_item])
         # remove deleted files
         for child in path_to_child.values():
             self.takeRow(child.row())
@@ -80,7 +82,7 @@ class RemoteFileSystem(QStandardItemModel):
 
     def __init__(self, conn, root_path):
         super(RemoteFileSystem, self).__init__()
-        self.root = RemoteFileSystemNode(root_path, conn, root_path, True)
+        self.root = RemoteFileSystemNode(root_path, conn, root_path, True, None)
         self.root.populate()
         self.appendRow(self.root)
         self.index = self.root.index()

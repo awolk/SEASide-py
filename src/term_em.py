@@ -21,7 +21,6 @@ class TerminalEmulator:
         """Receive bytes from server"""
         if self._connection.has_ssh_data():
             self._stream.feed(self._connection.receive_ssh_data())
-        print(self._screen.title)
 
     def resize(self, rows=24, cols=80):
         self._connection.resize_term(rows, cols)
