@@ -55,7 +55,6 @@ class Terminal(QTextEdit):
             super(Terminal, self).keyPressEvent(evt)
 
         if not self._term_em.open_connection():
-            self._stop_timer()
             return
 
         w = self._term_em.write
