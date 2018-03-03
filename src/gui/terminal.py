@@ -17,11 +17,13 @@ class Terminal(QTextEdit):
         self._text_height = self.fontMetrics().lineSpacing() + 2.3  # This could be cleaner too
         # self.setStyleSheet('background-color: black; color: white')
         self._parent = parent
+        self._conn = None
         self._term_em = None
         self._timer = QTimer(self)
 
     def start(self):
-        self._term_em = TerminalEmulator(self._parent.get_connection())
+        self._conn = self._parent.get_connection()
+        self._term_em = TerminalEmulator(self._conn)
         self._resize(self.width(), self.height())
         self._timer.timeout.connect(self._check_input)
         self._timer.start(0)  # TODO: Prevent input checking blocking
@@ -103,6 +105,7 @@ class Terminal(QTextEdit):
         if not self._term_em.open_connection():
             self._stop_timer()
             return
+        self._conn.step_x11()
         self._term_em.receive()
         line_nums = self._term_em.dirty_lines()
         if line_nums:

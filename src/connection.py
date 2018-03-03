@@ -2,7 +2,7 @@ import paramiko
 import pathlib
 import os
 import stat
-from x11 import X11Handler
+from x11 import X11Handler, supports_x11
 
 _key_dir = os.path.join(os.path.expanduser('~'), '.ssh')
 pathlib.Path(_key_dir).mkdir(parents=True, exist_ok=True)  # make ~/.ssh folder if necessary
@@ -37,10 +37,11 @@ class Connection:
 
     def _build_connection(self):
         transport: paramiko.Transport = self._client.get_transport()
-        self._client.invoke_shell()
         self._chan = transport.open_session()
-        # self._chan.request_x11()
-        # self._handler = X11Handler(transport).start()
+        self._handler = None
+        if supports_x11():
+            self._chan.request_x11()
+            self._handler = X11Handler(transport)
         self._chan.get_pty('vt100', 80, 24, 0, 0)
         self._chan.invoke_shell()
         self._sftp = self._client.open_sftp()
@@ -128,3 +129,6 @@ class Connection:
     def has_open_connection(self):
         return self._is_open
 
+    def step_x11(self):
+        if supports_x11() and self._handler:
+            self._handler.step()
