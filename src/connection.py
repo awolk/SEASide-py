@@ -59,6 +59,7 @@ class Connection:
         self._chan.invoke_shell()
         # X11Handler(transport).start()
         self._sftp = self._client.open_sftp()
+        self._is_open = True
         self._sftp.chdir('.')
         self._home_dir = self._sftp.getcwd()
 
@@ -80,7 +81,6 @@ class Connection:
             return False
         else:
             self._build_connection()
-            self._is_open = True
             return True
 
     def attempt_login(self, username, password):
@@ -135,8 +135,10 @@ class Connection:
         return self._home_dir
 
     def close_connection(self):
-        self._client.close()
-        self._is_open = False
+        try:
+            self._client.close()
+        finally:
+            self._is_open = False
 
     def has_open_connection(self):
         return self._is_open

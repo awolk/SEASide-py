@@ -64,4 +64,4 @@ class TerminalEmulator:
         self.write(ctrl.ESC + cursor_escape + esc.CUF)
 
     def open_connection(self):
-        return self._connection.has_open_connection
+        return self._connection.has_open_connection()

@@ -24,7 +24,7 @@ class Terminal(QTextEdit):
         self._term_em = TerminalEmulator(self._parent.get_connection())
         self._resize(self.width(), self.height())
         self._timer.timeout.connect(self._check_input)
-        self._timer.start(0)  # TODO: Prevent input checking blocking: make changing text more efficient (using dirty fields)
+        self._timer.start(0)  # TODO: Prevent input checking blocking
 
     def _resize(self, width, height):
         self._height = int(height / self._text_height)
@@ -50,15 +50,20 @@ class Terminal(QTextEdit):
 
         text = evt.text()
 
+        if control and key == Qt.Key_C:
+            # Copy
+            super(Terminal, self).keyPressEvent(evt)
+
+        if not self._term_em.open_connection():
+            self._stop_timer()
+            return
+
         w = self._term_em.write
         if control and key == Qt.Key_V:
             # Paste
             clip_text = QApplication.clipboard().text()
             w(clip_text)
-        if control and key == Qt.Key_C:
-            # Copy
-            super(Terminal, self).keyPressEvent(evt)
-        if key == Qt.Key_Backspace:
+        elif key == Qt.Key_Backspace:
             return w(ctrl.BS)
         elif key == Qt.Key_Up:
             self._term_em.key_up()
@@ -90,6 +95,9 @@ class Terminal(QTextEdit):
 
     @pyqtSlot()
     def _check_input(self):
+        if not self._term_em.open_connection():
+            self._stop_timer()
+            return
         self._term_em.receive()
         line_nums = self._term_em.dirty_lines()
         if line_nums:
@@ -110,3 +118,6 @@ class Terminal(QTextEdit):
             if curs.position() != new_position:
                 curs.setPosition(new_position)
                 self.setTextCursor(curs)
+
+    def _stop_timer(self):
+        self._timer.timeout.disconnect(self._check_input)
