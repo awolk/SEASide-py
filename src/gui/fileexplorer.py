@@ -59,7 +59,9 @@ class RemoteFileSystemNode(QStandardItem):
             path = self._path + '/' + child_filename
             if path in path_to_child:
                 if recursive:
-                    path_to_child[path].reload()  # reload child if this reload is recursive
+                    child = path_to_child[path]
+                    if child.is_populated():
+                        child.reload(recursive)  # reload child if this reload is recursive
                 del path_to_child[path]
             else:  # child not created
                 new_child = RemoteFileSystemNode(child_filename,
