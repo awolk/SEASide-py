@@ -36,8 +36,8 @@ To run through PyCharm:
     Edit Configurations
     + -> Python
         Name: SEASide
-        Script path: main.py
-        Working directory: set to 'src' directory
+        Script path: src/main.py
+        Working directory: set to repository directory
 
 Version Control
 ---------------
