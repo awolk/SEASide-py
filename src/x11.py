@@ -3,21 +3,17 @@ import Xlib
 import Xlib.support.connect as xlib_connect
 import selectors
 
-_supports_x11 = True
-
-
-def supports_x11():
-    return _supports_x11
-
 
 class X11Handler:
     def __init__(self, transport):
         self._transport = transport
         self._sel = selectors.DefaultSelector()
+        self.sockets = []
 
     def _register(self, source, destination):
         try:
             self._sel.register(source, selectors.EVENT_READ, destination)
+            self.sockets.append(source)
         except KeyError:
             pass
 
@@ -27,7 +23,12 @@ class X11Handler:
         except (KeyError, ValueError):
             pass
 
+    def close(self):
+        for socket in self.sockets:
+            socket.close()
+
     def step(self):
+        """Step X11 handler event loop. Returns support for X11"""
         # Try to accept a new connection
         x11_channel = self._transport.accept(timeout=0)
         if x11_channel is not None:
@@ -37,8 +38,7 @@ class X11Handler:
             try:
                 local_x11_socket = xlib_connect.get_socket(dname, protocol, host, dno)
             except Xlib.error.DisplayConnectionError:
-                _supports_x11 = False
-                return
+                return False  # X11 is not supported
             # Prevent sockets from blocking
             local_x11_socket.setblocking(False)
             x11_channel.setblocking(False)
@@ -64,3 +64,5 @@ class X11Handler:
                 dest.close()
                 self._unregister(src)
                 self._unregister(dest)
+        # X11 is supported
+        return True

@@ -2,7 +2,7 @@ import paramiko
 import pathlib
 import os
 import stat
-from x11 import X11Handler, supports_x11
+from x11 import X11Handler
 
 _key_dir = os.path.join(os.path.expanduser('~'), '.ssh')
 pathlib.Path(_key_dir).mkdir(parents=True, exist_ok=True)  # make ~/.ssh folder if necessary
@@ -25,7 +25,7 @@ def _ensure_key_exists():
 
 
 class Connection:
-    def __init__(self, server):
+    def __init__(self, server, use_x11=True):
         self._server = server
         self._client = paramiko.SSHClient()
         self._client.load_system_host_keys()
@@ -34,12 +34,13 @@ class Connection:
         self._sftp = None
         self._home_dir = None
         self._is_open = False
+        self._use_x11 = use_x11
 
     def _build_connection(self):
         transport: paramiko.Transport = self._client.get_transport()
         self._chan = transport.open_session()
         self._handler = None
-        if supports_x11():
+        if self._use_x11:
             self._chan.request_x11()
             self._handler = X11Handler(transport)
         self._chan.get_pty('vt100', 80, 24, 0, 0)
@@ -122,6 +123,8 @@ class Connection:
 
     def close_connection(self):
         try:
+            if self._use_x11:
+                self._handler.close()
             self._client.close()
         finally:
             self._is_open = False
@@ -130,5 +133,7 @@ class Connection:
         return self._is_open
 
     def step_x11(self):
-        if supports_x11() and self._handler:
-            self._handler.step()
+        if self._use_x11 and not self._handler.step():
+            # X11 has failed if this is reached
+            self._use_x11 = False
+            self._handler.close()

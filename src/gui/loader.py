@@ -14,7 +14,6 @@ class LoaderObject(QObject):
         self._password = password
 
     def attempt_connect(self):
-        print('Connecting')
         if self._username is None:
             self.failure.emit('')
             self.finished.emit()
@@ -42,12 +41,10 @@ class Loader(QLabel):
 
     @pyqtSlot(str)
     def connect_success(self, username):
-        print('Success, username:', username)
         self.success.emit(username)
 
     @pyqtSlot(str)
     def connect_failure(self, error):
-        print('Failure')
         self.failure.emit(error)
 
     def connect(self, username=None, password=None):
