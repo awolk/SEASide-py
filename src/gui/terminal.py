@@ -64,7 +64,7 @@ class Terminal(QTextEdit):
             clip_text = QApplication.clipboard().text()
             w(clip_text)
         elif key == Qt.Key_Backspace:
-            return w(ctrl.BS)
+            return w(ctrl.DEL)
         elif key == Qt.Key_Up:
             self._term_em.key_up()
         elif key == Qt.Key_Down:
@@ -90,6 +90,12 @@ class Terminal(QTextEdit):
                 return w('\036')
             elif text == '?':
                 return w('\037')
+        elif alt and 0 <= key <= 255:
+            # TODO: Make more robust
+            char = chr(key)
+            if not shift:
+                char = char.lower()
+            w(ctrl.ESC + char)
         else:
             w(text)
 
