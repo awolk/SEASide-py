@@ -85,7 +85,7 @@ class Connection:
         try:
             self._chan.send(bytes)
         except OSError:
-            self.close_connection()
+            self._chan.close()
 
     def has_ssh_data(self):
         """returns True if there is buffered data returns False otherwise"""
