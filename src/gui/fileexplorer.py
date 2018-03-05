@@ -35,7 +35,7 @@ class RemoteFileSystemNode(QStandardItem):
         return self._name
 
     def rename(self, new_name):
-        if new_name:
+        if new_name and new_name != self._name:
             self.path = self._conn.rename(self.path, new_name)
             self._name = new_name
             self.setText(new_name)

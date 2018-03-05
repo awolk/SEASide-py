@@ -122,7 +122,8 @@ class Connection:
     def rename(self, path, new_name):
         remote_dir = path[:path.rindex('/')]
         new_path = remote_dir + '/' + new_name
-        self._sftp.rename(path, new_path)
+        if path != new_path:
+            self._sftp.rename(path, new_path)
         return new_path
 
     def move_to_dir(self, src, dest):
