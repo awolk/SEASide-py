@@ -112,7 +112,7 @@ class Connection:
         return [(file.filename, stat.S_ISDIR(file.st_mode), file.st_size) for file in files]
 
     def file_to_remote(self, local_filename, remote_dir, callback=None):
-        name = os.path.basename(local_filename)
+        name = local_filename[local_filename.rindex('/') + 1:]
         remote_path = remote_dir + '/' + name
         self._sftp.put(local_filename, remote_path, callback, confirm=True)
 
@@ -124,6 +124,12 @@ class Connection:
         new_path = remote_dir + '/' + new_name
         self._sftp.rename(path, new_path)
         return new_path
+
+    def move_to_dir(self, src, dest):
+        name = src[src.rindex('/') + 1:]
+        new_name = dest + '/' + name
+        if src != new_name:
+            self._sftp.rename(src, new_name)
 
     def delete_file(self, path):
         self._sftp.remove(path)

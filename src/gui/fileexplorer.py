@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout, QMenu, QAction, \
     QFileDialog, QHeaderView, QItemDelegate, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint, QEvent
+from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint, \
+    QMimeData
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -89,6 +90,7 @@ class RemoteFileSystem(QStandardItemModel):
         self.root.populate()
         self.appendRow(self.root)
         self.index = self.root.index()
+        self._item_from_path = {}
 
     def hasChildren(self, parent=None, *args, **kwargs):
         if self.data(parent, RemoteFileSystem.ExpandableRole):
@@ -104,10 +106,25 @@ class RemoteFileSystem(QStandardItemModel):
         return QVariant()
 
     def flags(self, index: QModelIndex):
-        flags = Qt.ItemIsSelectable | Qt.ItemIsDropEnabled | Qt.ItemIsEnabled
+        flags = Qt.ItemIsSelectable | Qt.ItemIsDropEnabled | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
         if index.column() == 0:
             flags |= Qt.ItemIsEditable
         return flags
+
+    def mimeTypes(self):
+        return ['seaside/remote-item']
+
+    def mimeData(self, indices):
+        data = QMimeData()
+        for index in indices:  # only select file node
+            node = self.itemFromIndex(index)
+            if isinstance(node, RemoteFileSystemNode):
+                data.setData('seaside/remote-item', bytes(node.path, 'ascii'))
+                self._item_from_path[node.path] = node
+        return data
+
+    def get_item_from_path(self, path):
+        return self._item_from_path[path]
 
 
 class EditDelegate(QItemDelegate):
@@ -130,18 +147,34 @@ class FileTreeView(QTreeView):
             self._model.root.reload()
 
     def dragEnterEvent(self, evt):
-        if evt.mimeData().hasUrls():  # Accept local files
+        if evt.mimeData().hasUrls() or evt.source() == self:  # Accept local/remote files
             evt.accept()
 
     def dragMoveEvent(self, evt):
-        if evt.mimeData().hasUrls():  # Accept local files
-            evt.accept()
+        if evt.mimeData().hasUrls() or evt.source() == self:  # Accept local/remote files
+            if evt.mimeData():
+                evt.accept()
             index = self.indexAt(evt.pos())
             self.selectionModel().clear()
             self.selectionModel().select(QItemSelection(index, index), QItemSelectionModel.Select)
+            if evt.source() == self and index.isValid():
+                item = self.model().itemFromIndex(index)
+                if not item.is_dir():
+                    item = item.parent()
+                data = evt.mimeData()
+                dragged_path = data.data('seaside/remote-item').data().decode('ascii')
+                dragged = self.model().get_item_from_path(dragged_path)
+                # Check that drag is valid: item not being dragged to it's child
+                parent = item
+                while parent != self._model.root:
+                    if dragged == parent:
+                        evt.ignore()
+                        return
+                    parent = parent.parent()
+            evt.accept()
 
     def dropEvent(self, evt):
-        if evt.mimeData().hasUrls():  # Accept local files
+        if evt.mimeData().hasUrls() or evt.source() == self:  # Accept local/remote files
             evt.accept()
             index: QModelIndex = self.indexAt(evt.pos())
             if index.isValid():
@@ -153,14 +186,26 @@ class FileTreeView(QTreeView):
 
             path = item.path
 
-            for url in evt.mimeData().urls():
-                local_filename = url.toLocalFile()
+            # Handle local files
+            if evt.mimeData().hasUrls():
+                for url in evt.mimeData().urls():
+                    local_filename = url.toLocalFile()
 
-                def callback(bytes_so_far, total_bytes):
-                    if bytes_so_far == total_bytes:
-                        item.reload(recursive=False)
+                    def callback(bytes_so_far, total_bytes):
+                        if bytes_so_far == total_bytes:
+                            item.reload(recursive=False)
 
-                self._conn.file_to_remote(local_filename, path, callback)
+                    self._conn.file_to_remote(local_filename, path, callback)
+
+            # Handle remote files
+            if evt.source() == self:
+                data = evt.mimeData()
+                dragged_path = data.data('seaside/remote-item').data().decode('ascii')
+                dragged = self.model().get_item_from_path(dragged_path)
+                self._conn.move_to_dir(dragged_path, path)
+                dragged.parent().takeRow(dragged.row())
+                RemoteFileSystemNode
+                item.reload(recursive=False)
 
     def start(self, root_path):
         # Build file structure
