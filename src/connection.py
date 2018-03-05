@@ -133,7 +133,4 @@ class Connection:
         return self._is_open
 
     def step_x11(self):
-        if self._use_x11 and not self._handler.step():
-            # X11 has failed if this is reached
-            self._use_x11 = False
-            self._handler.close()
+        self._handler.step()

@@ -1,5 +1,5 @@
 import os
-import Xlib
+import Xlib.error
 import Xlib.support.connect as xlib_connect
 import selectors
 
@@ -37,7 +37,7 @@ class X11Handler:
                 dname, protocol, host, dno, screen = xlib_connect.get_display(os.environ['DISPLAY'])
                 protocol = protocol or None
                 local_x11_socket = xlib_connect.get_socket(dname, protocol, host, dno)
-            except Xlib.error.DisplayConnectionError:
+            except (Xlib.error.DisplayConnectionError, KeyError):
                 return False  # X11 is not supported
             # Prevent sockets from blocking
             local_x11_socket.setblocking(False)
