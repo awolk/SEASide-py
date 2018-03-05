@@ -8,12 +8,12 @@ class X11Handler:
     def __init__(self, transport):
         self._transport = transport
         self._sel = selectors.DefaultSelector()
-        self.sockets = []
+        self._sockets = []
 
     def _register(self, source, destination):
         try:
             self._sel.register(source, selectors.EVENT_READ, destination)
-            self.sockets.append(source)
+            self._sockets.append(source)
         except KeyError:
             pass
 
@@ -24,7 +24,7 @@ class X11Handler:
             pass
 
     def close(self):
-        for socket in self.sockets:
+        for socket in self._sockets:
             socket.close()
 
     def step(self):
@@ -33,9 +33,9 @@ class X11Handler:
         x11_channel = self._transport.accept(timeout=0)
         if x11_channel is not None:
             # Build connection
-            dname, protocol, host, dno, screen = xlib_connect.get_display(os.environ['DISPLAY'])
-            protocol = protocol or None
             try:
+                dname, protocol, host, dno, screen = xlib_connect.get_display(os.environ['DISPLAY'])
+                protocol = protocol or None
                 local_x11_socket = xlib_connect.get_socket(dname, protocol, host, dno)
             except Xlib.error.DisplayConnectionError:
                 return False  # X11 is not supported
@@ -47,6 +47,9 @@ class X11Handler:
             self._register(local_x11_socket, x11_channel)
 
         # Handle communication over registered sockets
+        if not self._sockets:
+            return True  # Windows fails when 'selecting' nothing, so return
+
         events = self._sel.select(timeout=0)
         for key, mask in events:
             # send data from source to destination
