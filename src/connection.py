@@ -125,6 +125,9 @@ class Connection:
         self._sftp.rename(path, new_path)
         return new_path
 
+    def delete_file(self, path):
+        self._sftp.remove(path)
+
     def get_home_dir(self):
         return self._home_dir
 

@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout, QMenu, QAction, \
-    QFileDialog, QHeaderView, QItemDelegate
+    QFileDialog, QHeaderView, QItemDelegate, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint, QEvent
 
@@ -201,22 +201,44 @@ class FileTreeView(QTreeView):
         if item.is_dir():
             return
         menu = QMenu()
+        # Download menu item
         download_action = QAction('Download {}'.format(item.name()))
         download_action.setData({
+            'action': 'download',
             'path': item.path,
             'name': item.name()
         })
         menu.addAction(download_action)
+        # Delete menu item
+        delete_action = QAction('Delete {}'.format(item.name()))
+        delete_action.setData({
+            'action': 'delete',
+            'path': item.path,
+            'name': item.name(),
+            'item': item
+        })
+        menu.addAction(delete_action)
         menu.triggered.connect(self._download_menu)
         menu.exec_(self.viewport().mapToGlobal(position))
 
     @pyqtSlot(QAction)
     def _download_menu(self, action: QAction):
-        if action.text().startswith('Download '):
+        if action.data()['action'] == 'download':
             remote_path, name = action.data()['path'], action.data()['name']
             local_path = QFileDialog.getSaveFileName(caption='Save File', directory=name)[0]
             if local_path:
                 self._conn.file_from_remote(remote_path, local_path)
+        elif action.data()['action'] == 'delete':
+            remote_path, remote_name, item = action.data()['path'], action.data()['name'], action.data()['item']
+            dialog = QMessageBox()
+            dialog.setText("Are you sure you want to delete '{}'? This cannot be undone".format(remote_name))
+            dialog.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
+            dialog.setDefaultButton(QMessageBox.Cancel)
+            res = dialog.exec()
+            if res == QMessageBox.Cancel:
+                return
+            self._conn.delete_file(remote_path)
+            item.parent().takeRow(item.row())
 
 
 class FileExplorer(QWidget):
