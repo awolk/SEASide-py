@@ -162,6 +162,9 @@ class FileTreeView(QTreeView):
             self.selectionModel().clear()
             self.selectionModel().select(QItemSelection(index, index), QItemSelectionModel.Select)
             if evt.source() == self and index.isValid():
+                if index.column() != 0:
+                    evt.ignore()
+                    return
                 item = self.model().itemFromIndex(index)
                 if not item.is_dir():
                     item = item.parent()
