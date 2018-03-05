@@ -34,6 +34,7 @@ class Connection:
         self._sftp = None
         self._home_dir = None
         self._is_open = False
+        self._handler = None
         self._use_x11 = use_x11
 
     def _build_connection(self):
@@ -118,12 +119,18 @@ class Connection:
     def file_from_remote(self, remote_filename, local_filename, callback=None):
         self._sftp.get(remote_filename, local_filename, callback)
 
+    def rename(self, path, new_name):
+        remote_dir = path[:path.rindex('/')]
+        new_path = remote_dir + '/' + new_name
+        self._sftp.rename(path, new_path)
+        return new_path
+
     def get_home_dir(self):
         return self._home_dir
 
     def close_connection(self):
         try:
-            if self._use_x11:
+            if self._handler and self._use_x11:
                 self._handler.close()
             self._client.close()
         finally:

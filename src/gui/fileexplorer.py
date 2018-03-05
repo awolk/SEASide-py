@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout, QMenu, QAction, \
-    QFileDialog, QHeaderView
+    QFileDialog, QHeaderView, QItemDelegate
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint
+from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint, QEvent
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -22,7 +22,7 @@ class RemoteFileSystemNode(QStandardItem):
         super(RemoteFileSystemNode, self).__init__(name)
         self._name = name
         self._conn = conn
-        self._path = path
+        self.path = path
         self._is_dir = is_dir
         self._populated = not is_dir
         self._show_hidden_files = False
@@ -33,8 +33,11 @@ class RemoteFileSystemNode(QStandardItem):
     def name(self):
         return self._name
 
-    def path(self):
-        return self._path
+    def rename(self, new_name):
+        if new_name:
+            self.path = self._conn.rename(self.path, new_name)
+            self._name = new_name
+            self.setText(new_name)
 
     def is_dir(self):
         return self._is_dir
@@ -51,13 +54,13 @@ class RemoteFileSystemNode(QStandardItem):
         if not self._is_dir:
             return
         children = [self.child(i) for i in range(self.rowCount())]
-        path_to_child = {child.path(): child for child in children}
+        path_to_child = {child.path: child for child in children}
         # check current state of directory
-        for child_filename, child_is_dir, child_size in self._conn.list_dir_stats(self._path):
+        for child_filename, child_is_dir, child_size in self._conn.list_dir_stats(self.path):
             if child_filename.startswith('.') and not self._show_hidden_files:
                 continue
             # check if child is already created
-            path = self._path + '/' + child_filename
+            path = self.path + '/' + child_filename
             if path in path_to_child:
                 if recursive:
                     child = path_to_child[path]
@@ -68,7 +71,7 @@ class RemoteFileSystemNode(QStandardItem):
             else:  # child not created
                 new_child = RemoteFileSystemNode(child_filename,
                                                  self._conn,
-                                                 self._path + '/' + child_filename,
+                                                 self.path + '/' + child_filename,
                                                  child_is_dir,
                                                  child_size)
                 self.appendRow([new_child, new_child.size_item])
@@ -99,6 +102,19 @@ class RemoteFileSystem(QStandardItemModel):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return ['Name', 'Size'][section]
         return QVariant()
+
+    def flags(self, index: QModelIndex):
+        flags = Qt.ItemIsSelectable | Qt.ItemIsDropEnabled | Qt.ItemIsEnabled
+        if index.column() == 0:
+            flags |= Qt.ItemIsEditable
+        return flags
+
+
+class EditDelegate(QItemDelegate):
+    def setModelData(self, editor: QWidget, model: RemoteFileSystem, index):
+        if index.parent().isValid():
+            node: RemoteFileSystemNode = model.itemFromIndex(index)
+            node.rename(editor.text())
 
 
 class FileTreeView(QTreeView):
@@ -135,7 +151,7 @@ class FileTreeView(QTreeView):
             else:
                 item = self.model().root
 
-            path = item.path()
+            path = item.path
 
             for url in evt.mimeData().urls():
                 local_filename = url.toLocalFile()
@@ -169,6 +185,8 @@ class FileTreeView(QTreeView):
         self.header().setStretchLastSection(False)
         self.header().setSectionResizeMode(0, QHeaderView.Stretch)
         self.header().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        # Handle editing file names
+        self.setItemDelegate(EditDelegate())
 
     def _update(self, index):
         parent = self.model().itemFromIndex(index)
@@ -185,7 +203,7 @@ class FileTreeView(QTreeView):
         menu = QMenu()
         download_action = QAction('Download {}'.format(item.name()))
         download_action.setData({
-            'path': item.path(),
+            'path': item.path,
             'name': item.name()
         })
         menu.addAction(download_action)
