@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout, QMenu, QAction, \
-    QFileDialog, QHeaderView, QItemDelegate, QMessageBox
+    QFileDialog, QHeaderView, QItemDelegate, QMessageBox, QFileIconProvider
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint, \
     QMimeData
@@ -28,8 +28,12 @@ class RemoteFileSystemNode(QStandardItem):
         self._populated = not is_dir
         self._show_hidden_files = False
         self.size_item = QStandardItem(sizeof_fmt(size) if not is_dir else '')
+        icon_provider = QFileIconProvider()
         if is_dir:
             self.setData(True, RemoteFileSystem.ExpandableRole)
+            self.setIcon(icon_provider.icon(QFileIconProvider.Folder))
+        else:
+            self.setIcon(icon_provider.icon(QFileIconProvider.File))
 
     def name(self):
         return self._name
