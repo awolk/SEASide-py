@@ -319,6 +319,8 @@ class FileTreeView(QTreeView):
             item.parent().takeRow(item.row())
         elif action.data()['action'] == 'rename':
             item = action.data()['item']
+            if item.index() == self.rootIndex():
+                self.parent_dir()
             self.edit(item.index())
 
 
