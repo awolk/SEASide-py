@@ -4,9 +4,9 @@ from PyQt5.Qt import QApplication
 
 
 class TerminalEmulator:
-    def __init__(self, connection):
+    def __init__(self, connection, screen):
         self._connection = connection
-        self._screen = pyte.HistoryScreen(80, 24)
+        self._screen = screen
         self._screen.bell = self._beep
         self._stream = pyte.ByteStream(self._screen)
 

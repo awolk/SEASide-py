@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QTreeView, QAbstractItemView, QWidget, QPushButton, QVBoxLayout, QMenu, QAction, \
-    QFileDialog, QHeaderView, QItemDelegate, QMessageBox, QFileIconProvider
+    QFileDialog, QHeaderView, QItemDelegate, QMessageBox, QFileIconProvider, QSizePolicy, QHBoxLayout
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QVariant, QItemSelectionModel, QItemSelection, QModelIndex, pyqtSlot, QPoint, \
     QMimeData
@@ -10,7 +10,7 @@ def sizeof_fmt(num, suffix='B'):
     # https://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
         if abs(num) < 1024.0:
-            return "%3.1f %s%s" % (num, unit, suffix)
+            return "%3.0f %s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
@@ -95,6 +95,7 @@ class RemoteFileSystem(QStandardItemModel):
         self.appendRow(self.root)
         self.index = self.root.index()
         self._item_from_path = {}
+        self._conn = conn
 
     def hasChildren(self, parent=None, *args, **kwargs):
         if self.data(parent, RemoteFileSystem.ExpandableRole):
@@ -116,7 +117,7 @@ class RemoteFileSystem(QStandardItemModel):
         return flags
 
     def mimeTypes(self):
-        return ['seaside/remote-item']
+        return ['seaside/remote-item', 'text/uri-list']
 
     def mimeData(self, indices):
         data = QMimeData()
@@ -124,6 +125,7 @@ class RemoteFileSystem(QStandardItemModel):
             node = self.itemFromIndex(index)
             if isinstance(node, RemoteFileSystemNode):
                 data.setData('seaside/remote-item', bytes(node.path, 'ascii'))
+                # data.setData('text/uri-list', b'sftp://' + bytes(self._conn._server + '/' + node.path, 'ascii'))
                 self._item_from_path[node.path] = node
         return data
 
@@ -189,7 +191,7 @@ class FileTreeView(QTreeView):
                 if not item.is_dir():
                     item = item.parent()
             else:
-                item = self.model().root
+                item = self.model().itemFromIndex(self.rootIndex())
 
             path = item.path
 
@@ -231,6 +233,9 @@ class FileTreeView(QTreeView):
         # Handle right clicking nodes in file explorer
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._open_menu)
+        # Handle double clicking nodes
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.doubleClicked.connect(self.double_click)
         # Handle column sizing
         self.setColumnWidth(0, 150)
         self.setColumnWidth(1, 90)
@@ -250,31 +255,51 @@ class FileTreeView(QTreeView):
         if len(indexes) != 2:
             return
         item = self._model.itemFromIndex(indexes[0])
-        if item.is_dir():
-            return
         menu = QMenu()
-        # Download menu item
-        download_action = QAction('Download {}'.format(item.name()))
-        download_action.setData({
-            'action': 'download',
-            'path': item.path,
-            'name': item.name()
-        })
-        menu.addAction(download_action)
-        # Delete menu item
-        delete_action = QAction('Delete {}'.format(item.name()))
-        delete_action.setData({
-            'action': 'delete',
-            'path': item.path,
-            'name': item.name(),
+        # Rename menu action
+        open_action = QAction('Rename {}'.format(item.name()))
+        open_action.setData({
+            'action': 'rename',
             'item': item
         })
-        menu.addAction(delete_action)
-        menu.triggered.connect(self._download_menu)
+        menu.addAction(open_action)
+        if not item.is_dir():
+            # Download menu item
+            download_action = QAction('Download {}'.format(item.name()))
+            download_action.setData({
+                'action': 'download',
+                'path': item.path,
+                'name': item.name()
+            })
+            menu.addAction(download_action)
+            # Delete menu item
+            delete_action = QAction('Delete {}'.format(item.name()))
+            delete_action.setData({
+                'action': 'delete',
+                'path': item.path,
+                'name': item.name(),
+                'item': item
+            })
+            menu.addAction(delete_action)
+        menu.triggered.connect(self._file_menu)
         menu.exec_(self.viewport().mapToGlobal(position))
 
+    @pyqtSlot()
+    def parent_dir(self):
+        if self.rootIndex() == self._model.index:
+            return  # already at root
+        root_item = self.model().itemFromIndex(self.rootIndex())
+        self.setRootIndex(root_item.parent().index())
+
+
+    @pyqtSlot(QModelIndex)
+    def double_click(self, ind):
+        item = self.model().itemFromIndex(ind)
+        item.reload()
+        self.setRootIndex(ind)
+
     @pyqtSlot(QAction)
-    def _download_menu(self, action: QAction):
+    def _file_menu(self, action: QAction):
         if action.data()['action'] == 'download':
             remote_path, name = action.data()['path'], action.data()['name']
             local_path = QFileDialog.getSaveFileName(caption='Save File', directory=name)[0]
@@ -291,16 +316,28 @@ class FileTreeView(QTreeView):
                 return
             self._conn.delete_file(remote_path)
             item.parent().takeRow(item.row())
+        elif action.data()['action'] == 'rename':
+            item = action.data()['item']
+            self.edit(item.index())
 
 
 class FileExplorer(QWidget):
     def __init__(self, parent):
         super(FileExplorer, self).__init__()
-        button = QPushButton('Refresh')
-        button.pressed.connect(self._btn_press)
+        button_layout = QHBoxLayout()
+        refresh_button = QPushButton('Refresh')
+        refresh_button.pressed.connect(self._btn_press)
+        back_button = QPushButton('<')
+        back_button.setMaximumWidth(80)
+        button_layout.addWidget(back_button)
+        button_layout.addWidget(refresh_button)
+        top_widg = QWidget()
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        top_widg.setLayout(button_layout)
         self._tree = FileTreeView(parent)
+        back_button.pressed.connect(self._tree.parent_dir)
         layout = QVBoxLayout()
-        layout.addWidget(button)
+        layout.addWidget(top_widg)
         layout.addWidget(self._tree)
         self.setLayout(layout)
 

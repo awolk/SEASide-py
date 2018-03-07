@@ -1,13 +1,16 @@
 from PyQt5.QtWidgets import QTextEdit, QApplication
 from PyQt5.QtCore import Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QFontDatabase, QTextCursor, QWheelEvent
-from pyte import control as ctrl, escape as esc
+from pyte import control as ctrl, escape as esc, Screen
+from pyte.screens import Margins
+
 from term_em import TerminalEmulator
 
 
-class Terminal(QTextEdit):
+class Terminal(Screen, QTextEdit):
     def __init__(self, parent):
-        super(Terminal, self).__init__()
+        Screen.__init__(self, 80, 24)
+        QTextEdit.__init__(self, parent=None)
         QApplication.instance().setCursorFlashTime(0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -22,9 +25,20 @@ class Terminal(QTextEdit):
         self._timer = QTimer(self)
         self._angle_delta = 0
 
+    def index(self):
+        top, bottom = self.margins or Margins(0, self.lines - 1)
+        if self.cursor.y == bottom:
+            # TODO: mark only the lines within margins?
+            self.dirty.update(range(self.lines))
+            for y in range(top, bottom):
+                self.buffer[y] = self.buffer[y + 1]
+            self.buffer.pop(bottom, None)
+        else:
+            self.cursor_down()
+
     def start(self):
         self._conn = self._parent.get_connection()
-        self._term_em = TerminalEmulator(self._conn)
+        self._term_em = TerminalEmulator(self._conn, self)
         self._resize(self.width(), self.height())
         self._timer.timeout.connect(self._check_input)
         self._timer.start(0)  # TODO: Prevent input checking blocking
