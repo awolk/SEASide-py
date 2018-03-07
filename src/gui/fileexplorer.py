@@ -296,7 +296,8 @@ class FileTreeView(QTreeView):
     def double_click(self, ind):
         item = self.model().itemFromIndex(ind)
         item.reload()
-        self.setRootIndex(ind)
+        if item.is_dir():
+            self.setRootIndex(ind)
 
     @pyqtSlot(QAction)
     def _file_menu(self, action: QAction):
