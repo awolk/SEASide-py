@@ -46,7 +46,7 @@ General Guidelines:
 * Commit messages should be descriptive and written as actions:
   Ex: Add login fields and error message to GUI
 
-Making a major change that should be reviewed:
+Making a major change that should be reviewed by someone:
     VCS -> Commit
     VCS -> Create Pull Request
     Once the pull request is created, assign reviewers
